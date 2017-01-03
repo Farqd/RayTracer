@@ -24,8 +24,9 @@ int main()
 	*/
 	std::vector<Sphere> spheres;
 
-	spheres.push_back({{2000, 300, 0}, 400, {200, 0, 0}});
-	spheres.push_back({{1200, 400, 400}, 400, {0, 200, 0}});
+	spheres.push_back({{1500, 200, -400}, 400, {200, 0, 0}});
+
+	spheres.push_back({{1300, 400, 400}, 200, {0, 200, 0}});
 
 	tracer.processPixels(spheres);
 	tracer.printBitmap();

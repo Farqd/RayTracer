@@ -11,7 +11,7 @@
 class RayTracer
 {
 	Point const observer = {0, 0, 0};
-	Point const light = {400000, 1000, 77700};
+	Point const light = {1000, 2000, 2000};
 	RGB background = {100, 100, 200};
 	// image is a rectangle with verticles (256, -+image_y, -+image_z)
 

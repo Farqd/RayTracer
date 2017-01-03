@@ -31,6 +31,8 @@ std::pair<bool, std::pair<Point, double> > intersection(Segment segment, Sphere 
 		return {false, {} };
 
 	double t = (-b - std::sqrt(discriminant)) / (2*a);
+	if(t < 0)
+		return {false, {} };
 	return {true, {{x0 + t*dx, y0 + t*dy, z0 + t*dz}, t }};
 
 }

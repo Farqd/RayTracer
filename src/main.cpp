@@ -16,6 +16,7 @@ int main()
 	std::cout<<std::setprecision(3);
 	
 	RayTracer tracer;
+
 	/*Segment seg{{0, 0, 0}, {100, 100,0}};
 	Sphere sp{{100, 100, 0}, 20};
 	auto const& res = intersection(seg, sp);
@@ -24,9 +25,9 @@ int main()
 	*/
 	std::vector<Sphere> spheres;
 
-	spheres.push_back({{1500, 200, -400}, 400, {200, 0, 0}});
+	spheres.push_back({{2500, 200, -600}, 600, {200, 0, 0}});
 
-	spheres.push_back({{1300, 400, 400}, 200, {0, 200, 0}});
+	spheres.push_back({{2300, 500, 800}, 400, {0, 200, 0}});
 
 	tracer.processPixels(spheres);
 	tracer.printBitmap();

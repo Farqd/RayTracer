@@ -37,28 +37,17 @@ namespace {
 
 }
 
-/*
-If the pixel is background color, use the Ray-Sphere Intersection formulas with
-            P0 = pixel = (x0, y0, 0)
-            P1 = Light = (Lx, Ly, Lz)
-Intersect this ray with each sphere in your scene.
-           
-If there is any intersection, the pixel is in shadow.
-            Use half (or less) the R, G, B of your background color.
-If there is no intersection, use the full R, G, B of the background color.
-
-*/
 void RayTracer::processPixelOnBackground(std::vector<Sphere> const& spheres, Point const& pixel)
 {
 	if(pixel.y - observer.y >= 0)
 	{
-		bitmap[pixel.y + image_y][pixel.z + image_z] = {0, 0, 0};
+		bitmap[pixel.y + imageY][pixel.z + imageZ] = {30, 30, 30};
 		return;
 	}
 
 	Point pointOnFloor;
-	pointOnFloor.y = -200;
-	double times = - 200 / (pixel.y - observer.y);
+	pointOnFloor.y = -400;
+	double times = - 400 / (pixel.y - observer.y);
 	
 	pointOnFloor.x = (pixel.x - observer.x) * times;
 	pointOnFloor.z = (pixel.z - observer.z) * times;
@@ -76,9 +65,9 @@ void RayTracer::processPixelOnBackground(std::vector<Sphere> const& spheres, Poi
 	}
 
 	if(isInShadow)
-		bitmap[pixel.y + image_y][pixel.z + image_z] = { uint8_t(background.r/2), uint8_t(background.g/2), uint8_t(background.b/2)};
+		bitmap[pixel.y + imageY][pixel.z + imageZ] = { uint8_t(background.r/2), uint8_t(background.g/2), uint8_t(background.b/2)};
 	else
-		bitmap[pixel.y + image_y][pixel.z + image_z] = background;
+		bitmap[pixel.y + imageY][pixel.z + imageZ] = background;
 
 }
 
@@ -118,7 +107,7 @@ void RayTracer::processPixel(std::vector<Sphere> const& spheres, Point const& po
 
 		if(isInShadow)
 		{
-			bitmap[point.y + image_y][point.z + image_z] = rgb *ambientCoefficient;
+			bitmap[point.y + imageY][point.z + imageZ] = rgb *ambientCoefficient;
 		}
 		else
 		{
@@ -127,7 +116,7 @@ void RayTracer::processPixel(std::vector<Sphere> const& spheres, Point const& po
 			normalize(unitVec);
 			double dot = dotProduct(normalVector, unitVec);
 
-			bitmap[point.y + image_y][point.z + image_z] = rgb* (std::max(0.0, diffuseCoefficient * dot) + ambientCoefficient);
+			bitmap[point.y + imageY][point.z + imageZ] = rgb* (std::max(0.0, diffuseCoefficient * dot) + ambientCoefficient);
 		}
 	}
 	else
@@ -136,22 +125,39 @@ void RayTracer::processPixel(std::vector<Sphere> const& spheres, Point const& po
 
 void RayTracer::processPixels(std::vector<Sphere> const& spheres)
 {
-	for(int y = -image_y; y < image_y; ++y)
-		for(int z = -image_z; z < image_z; ++z)
-			processPixel(spheres, {image_x, static_cast<double>(y), static_cast<double>(z)});
+	for(int y = -imageY; y < imageY; ++y)
+		for(int z = -imageZ; z < imageZ; ++z)
+			processPixel(spheres, {imageX, static_cast<double>(y)/antiAliasing, static_cast<double>(z)/antiAliasing});
 
 }
 void RayTracer::printBitmap()
 {
 	// see https://en.wikipedia.org/wiki/Netpbm_format for format details
 
-	std::cout<<"P3"<<std::endl;
-	std::cout<<512<<" "<<512<<std::endl<<255<<std::endl;
-	for(int i=bitmap.size()-1; i>=0; --i)
+	std::cout << "P3" << std::endl;
+	std::cout << imageZ*2/antiAliasing << " " << imageY*2/antiAliasing << std::endl << 255 << std::endl;
+	for(int i = imageY*2 - 1; i >= 0; i -= antiAliasing)
 	{
-		auto const& row = bitmap[i];
-		for(auto const& pixel : row)
-			std::cout << pixel << " ";
+		for(int j = 0; j < imageZ*2; j += antiAliasing)
+		{
+			int r = 0;
+			int g = 0;
+			int b = 0;
+
+			for(int ii = 0; ii < antiAliasing; ii++)
+				for(int jj=0; jj < antiAliasing; jj++)
+				{
+					r += bitmap[i-ii][j+jj].r;
+					g += bitmap[i-ii][j+jj].g;
+					b += bitmap[i-ii][j+jj].b;
+				}
+				
+			RGB color = {0,0,0};
+			color.r = r/(antiAliasing*antiAliasing);
+			color.g = g/(antiAliasing*antiAliasing);
+			color.b = b/(antiAliasing*antiAliasing);
+			std::cout << color << " ";
+		}
 		std::cout << std::endl;
 	}
 }

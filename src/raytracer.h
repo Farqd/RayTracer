@@ -1,5 +1,5 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef RAYTRACER_H
+#define RAYTRACER_H
 
 #include "structures.h"
 
@@ -34,4 +34,4 @@ public:
 
 };
 
-#endif
+#endif //RAYTRACER_H

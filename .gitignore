@@ -2,6 +2,8 @@
 build/
 obj/
 out/
+/Debug/
+/Release/
 
 #Compiled Object files
 *.slo

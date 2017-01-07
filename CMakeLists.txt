@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.1)
 project(RayTracer)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -6,10 +6,12 @@ set(CMAKE_CXX_STANDARD 14)
 set(SOURCE_FILES
       src/main.cpp
       src/raytracer.cpp
-      src/structures.cpp)
+      src/structures.cpp
+      src/utils.cpp)
 set(HEADER_FILES
       src/raytracer.h
-      src/structures.h)
+      src/structures.h
+      src/utils.h)
 
 add_executable(RayTracer ${SOURCE_FILES} ${HEADER_FILES})
 

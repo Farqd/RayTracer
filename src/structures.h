@@ -32,6 +32,8 @@ struct Point
   double z;
 };
 
+using Vector = Point;
+
 std::ostream& operator<<(std::ostream& outs, Point const& point);
 
 struct Sphere
@@ -49,6 +51,14 @@ struct Segment
 };
 std::ostream& operator<<(std::ostream& outs, Segment const& segment);
 
+// p * normal + d = 0
+struct Plane
+{
+  Point P;
+  Vector normal;
+  double d;
+  RGB color;
+};
 
 template <typename T>
 bool isCloseToZero(T x)
@@ -56,11 +66,6 @@ bool isCloseToZero(T x)
   return std::abs(x) < std::numeric_limits<T>::epsilon();
 }
 
-// Returns true if intersection exists
-// If two points of intersection exist closest is returned
-std::pair<bool, std::pair<Point, double>> intersection(Segment segment, Sphere sphere);
-
-using Vector = Point;
 
 
 #endif

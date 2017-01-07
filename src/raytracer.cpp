@@ -1,6 +1,7 @@
 #include "raytracer.h"
 
 #include "structures.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <array>
@@ -9,54 +10,80 @@
 #include <vector>
 
 
-namespace
+RGB RayTracer::processPixelOnBackground()
 {
-double vectorlen(Vector const& vec)
-{
-  return std::sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
+  return {0, 0, 0};
 }
 
-double dotProduct(Vector const& a, Vector const& b)
+std::pair<int, Point> RayTracer::findClosestSphereIntersection(Segment const& seg)
 {
-  return a.x * b.x + a.y * b.y + a.z * b.z;
-}
-
-bool pointInShadow(Point const& point, Point const& light, Sphere const& sphere)
-{
-  Segment seg = {point, light};
-  return intersection(seg, sphere).first;
-}
-
-void normalize(Vector& vec)
-{
-  double len = vectorlen(vec);
-  vec.x = vec.x / len;
-  vec.y = vec.y / len;
-  vec.z = vec.z / len;
-}
-}
-
-void RayTracer::processPixelOnBackground(std::vector<Sphere> const& spheres, Point const& pixel)
-{
-  if (pixel.y - observer.y >= 0)
+  std::vector<std::pair<std::pair<Point, double>, size_t>> distanceIndex;
+  for (size_t i = 0; i < spheres.size(); i++)
   {
-    bitmap[pixel.y + imageY][pixel.z + imageZ] = {30, 30, 30};
-    return;
+    Sphere const& sphere = spheres[i];
+    auto const& res = intersection(seg, sphere);
+    if (res.first)
+      distanceIndex.push_back({{res.second, distance(observer, res.second)}, i});
   }
 
-  Point pointOnFloor;
-  pointOnFloor.y = -400;
-  double times = -400 / (pixel.y - observer.y);
+  if(distanceIndex.empty())
+    return {-1, {}};
 
-  pointOnFloor.x = (pixel.x - observer.x) * times;
-  pointOnFloor.z = (pixel.z - observer.z) * times;
+  std::sort(distanceIndex.begin(), distanceIndex.end(),
+              [](std::pair<std::pair<Point, double>, int> const& a,
+                 std::pair<std::pair<Point, double>, int> const& b) {
+                return a.first.second < b.first.second;
+              });
 
-  Segment seg = {pointOnFloor, light};
+  return {distanceIndex[0].second, distanceIndex[0].first.first};
+
+}
+
+std::pair<int, Point> RayTracer::findClosestPlaneIntersection(Segment const& seg)
+{
+  std::vector<std::pair<std::pair<Point, double>, size_t>> distanceIndex;
+  for (size_t i = 0; i < planes.size(); i++)
+  {
+    Plane const& plane = planes[i];
+    auto const& res = intersection(seg, plane);
+    if (res.first)
+      distanceIndex.push_back({{res.second, distance(observer, res.second)}, i});
+  }
+
+  if(distanceIndex.empty())
+    return {-1, {}};
+
+  std::sort(distanceIndex.begin(), distanceIndex.end(),
+              [](std::pair<std::pair<Point, double>, int> const& a,
+                 std::pair<std::pair<Point, double>, int> const& b) {
+                return a.first.second < b.first.second;
+              });
+
+  return {distanceIndex[0].second, distanceIndex[0].first.first};
+
+}
+
+
+RGB RayTracer::processPixelOnSphere(Point const& pointOnSphere, size_t sphereIndex)
+{
+  Point const& center = spheres[sphereIndex].center;
+  double radius = spheres[sphereIndex].radius;
+  RGB rgb = spheres[sphereIndex].color;
 
   bool isInShadow = false;
-  for (auto const& sphere : spheres)
+
+  for (size_t i = 0; i < spheres.size(); i++)
   {
-    if (intersection(seg, sphere).first)
+    if (i != sphereIndex && pointInShadow(pointOnSphere, light, spheres[i]))
+    {
+      isInShadow = true;
+      break;
+    }
+  }
+
+  for (size_t i = 0; i < planes.size(); i++)
+  {
+    if (pointInShadow(pointOnSphere, light, planes[i]))
     {
       isInShadow = true;
       break;
@@ -64,76 +91,101 @@ void RayTracer::processPixelOnBackground(std::vector<Sphere> const& spheres, Poi
   }
 
   if (isInShadow)
-    bitmap[pixel.y + imageY][pixel.z + imageZ] = {
-        uint8_t(background.r / 2), uint8_t(background.g / 2), uint8_t(background.b / 2)};
+  {
+    return rgb * ambientCoefficient;
+  }
   else
-    bitmap[pixel.y + imageY][pixel.z + imageZ] = background;
+  {
+    Point normalVector = {(pointOnSphere.x - center.x) / radius,
+                          (pointOnSphere.y - center.y) / radius,
+                          (pointOnSphere.z - center.z) / radius};
+    Point unitVec = {light.x - pointOnSphere.x, light.y - pointOnSphere.y,
+                     light.z - pointOnSphere.z};
+    normalize(unitVec);
+    double dot = dotProduct(normalVector, unitVec);
+
+    return rgb * (std::max(0.0, diffuseCoefficient * dot) + ambientCoefficient);
+  }
 }
 
-
-void RayTracer::processPixel(std::vector<Sphere> const& spheres, Point const& point)
+RGB RayTracer::processPixelOnPlane(Point const& pointOnPlane, size_t planeIndex)
 {
-  Segment seg{observer, point};
-  std::vector<std::pair<std::pair<Point, double>, size_t>> distanceIndex;
+  bool isInShadow = false;
+
   for (size_t i = 0; i < spheres.size(); i++)
   {
-    Sphere const& sphere = spheres[i];
-    auto const& res = intersection(seg, sphere);
-    if (res.first)
-      distanceIndex.push_back({{res.second}, i});
+    if (pointInShadow(pointOnPlane, light, spheres[i]))
+    {
+      isInShadow = true;
+      break;
+    }
   }
 
-  if (!distanceIndex.empty())
+  for (size_t i = 0; i < planes.size(); i++)
   {
-    std::sort(distanceIndex.begin(), distanceIndex.end(),
-              [](std::pair<std::pair<Point, double>, int> const& a,
-                 std::pair<std::pair<Point, double>, int> const& b) {
-                return a.first.second < b.first.second;
-              });
-
-    Point const& pointOnSphere = distanceIndex[0].first.first;
-    Point const& center = spheres[distanceIndex[0].second].center;
-    double radius = spheres[distanceIndex[0].second].radius;
-    RGB rgb = spheres[distanceIndex[0].second].color;
-
-    bool isInShadow = false;
-    for (size_t i = 0; i < spheres.size(); i++)
+    if (i != planeIndex && pointInShadow(pointOnPlane, light, planes[i]))
     {
-      if (i != distanceIndex[0].second && pointInShadow(pointOnSphere, light, spheres[i]))
-      {
-        isInShadow = true;
-        break;
-      }
-    }
-
-    if (isInShadow)
-    {
-      bitmap[point.y + imageY][point.z + imageZ] = rgb * ambientCoefficient;
-    }
-    else
-    {
-      Point normalVector = {(pointOnSphere.x - center.x) / radius,
-                            (pointOnSphere.y - center.y) / radius,
-                            (pointOnSphere.z - center.z) / radius};
-      Point unitVec = {light.x - pointOnSphere.x, light.y - pointOnSphere.y,
-                       light.z - pointOnSphere.z};
-      normalize(unitVec);
-      double dot = dotProduct(normalVector, unitVec);
-
-      bitmap[point.y + imageY][point.z + imageZ] =
-          rgb * (std::max(0.0, diffuseCoefficient * dot) + ambientCoefficient);
+      isInShadow = true;
+      break;
     }
   }
-  else
-    processPixelOnBackground(spheres, point);
+
+  if (isInShadow)
+    return planes[planeIndex].color * ambientCoefficient;
+
+  Point unitVec = {light.x - pointOnPlane.x, light.y - pointOnPlane.y,
+                   light.z - pointOnPlane.z};
+  normalize(unitVec);
+  double dot = dotProduct(planes[planeIndex].normal, unitVec);
+  
+  // check if light is not from the other side - it probably should be done in a different way
+  Point nor = planes[planeIndex].normal;
+  nor.x = -nor.x;
+  nor.y = -nor.y;
+  nor.z = -nor.z;
+
+  double dot2 = dotProduct(nor, unitVec);
+  dot = std::max(dot, dot2);
+
+  return planes[planeIndex].color * (std::max(0.0, diffuseCoefficient * dot) + ambientCoefficient);
+
 }
 
-void RayTracer::processPixels(std::vector<Sphere> const& spheres)
+RGB RayTracer::processPixel(Point const& point)
+{
+
+  Segment seg{observer, point};
+
+  std::pair<int, Point> sphereIntersection = findClosestSphereIntersection(seg);
+  std::pair<int, Point> planeIntersection = findClosestPlaneIntersection(seg);
+
+  if(sphereIntersection.first != -1 && planeIntersection.first != -1)
+  {
+    if(distance(point, sphereIntersection.second) < distance(point, planeIntersection.second))
+      return processPixelOnSphere(sphereIntersection.second, sphereIntersection.first);
+    else
+      return processPixelOnPlane(planeIntersection.second, planeIntersection.first);
+  }
+
+  if (sphereIntersection.first != -1)
+    return processPixelOnSphere(sphereIntersection.second, sphereIntersection.first);
+  
+  if (planeIntersection.first != -1)
+    return processPixelOnPlane(planeIntersection.second, planeIntersection.first);
+
+  return processPixelOnBackground();
+}
+
+void RayTracer::processPixels()
 {
   for (int y = -imageY; y < imageY; ++y)
     for (int z = -imageZ; z < imageZ; ++z)
-      processPixel(spheres, {imageX, static_cast<double>(y) / antiAliasing,
+    {
+
+      RGB const& color = processPixel( {imageX, static_cast<double>(y) / antiAliasing,
                              static_cast<double>(z) / antiAliasing});
+      bitmap[static_cast<double>(y) / antiAliasing + imageY][static_cast<double>(z) / antiAliasing + imageZ] = color;
+    }
 }
 void RayTracer::printBitmap()
 {

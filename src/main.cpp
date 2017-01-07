@@ -7,8 +7,6 @@
 #include <iostream>
 #include <vector>
 
-// See http://www.ccs.neu.edu/home/fell/CSU540/programs/RayTracingFormulas.htm
-
 
 int main()
 {
@@ -16,19 +14,32 @@ int main()
   std::cout << std::setprecision(3);
 
   RayTracer tracer;
+  
+  // red
+  tracer.spheres.push_back({{2500, -200, -600}, 600, {200, 0, 0}});
 
-  /*Segment seg{{0, 0, 0}, {100, 100,0}};
-  Sphere sp{{100, 100, 0}, 20};
-  auto const& res = intersection(seg, sp);
-  if(res.first)
-    std::cout<<res.second.first<<" "<<res.second.second<<std::endl;
-  */
-  std::vector<Sphere> spheres;
+  //green
+  tracer.spheres.push_back({{2000, 0, 800}, 400, {0, 200, 0}});
 
-  spheres.push_back({{2500, 200, -600}, 600, {200, 0, 0}});
 
-  spheres.push_back({{2300, 500, 800}, 400, {0, 200, 0}});
+  // back
+  tracer.planes.push_back({{6000, 0, 0}, {1, 0, 0}, -6000, {178,170,30}});
 
-  tracer.processPixels(spheres);
+  // top
+  tracer.planes.push_back({{0, 3000, 0}, {0, 1, 0}, -3000, {255,105,180}});
+
+  // bottom
+  tracer.planes.push_back({{0, -800, 0}, {0, 1, 0}, 800, {100, 100, 200}});
+
+  // left
+  tracer.planes.push_back({{0, 0, -2500}, {0, 0, 1}, 2500, {32,178,170}});
+
+  // right
+  tracer.planes.push_back({{0, 0, 3500}, {0, 0, 1}, -3500, {32,178,170}});
+  
+  
+
+
+  tracer.processPixels();
   tracer.printBitmap();
 }

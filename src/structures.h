@@ -41,6 +41,7 @@ struct Sphere
   Point center;
   double radius;
   RGB color;
+  double reflectionCoefficient = 0.0;
 };
 std::ostream& operator<<(std::ostream& outs, Sphere const& sphere);
 
@@ -58,6 +59,7 @@ struct Plane
   Vector normal;
   double d;
   RGB color;
+  double reflectionCoefficient = 0.0;
 };
 
 template <typename T>
@@ -65,7 +67,6 @@ bool isCloseToZero(T x)
 {
   return std::abs(x) < std::numeric_limits<T>::epsilon();
 }
-
 
 
 #endif

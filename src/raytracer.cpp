@@ -23,20 +23,19 @@ std::pair<int, Point> RayTracer::findClosestSphereIntersection(Segment const& se
     Sphere const& sphere = spheres[i];
     auto const& res = intersection(seg, sphere);
     if (res.first)
-      distanceIndex.push_back({{res.second, distance(observer, res.second)}, i});
+      distanceIndex.push_back({{res.second, distance(seg.a, res.second)}, i});
   }
 
-  if(distanceIndex.empty())
+  if (distanceIndex.empty())
     return {-1, {}};
 
   std::sort(distanceIndex.begin(), distanceIndex.end(),
-              [](std::pair<std::pair<Point, double>, int> const& a,
-                 std::pair<std::pair<Point, double>, int> const& b) {
-                return a.first.second < b.first.second;
-              });
+            [](std::pair<std::pair<Point, double>, int> const& a,
+               std::pair<std::pair<Point, double>, int> const& b) {
+              return a.first.second < b.first.second;
+            });
 
   return {distanceIndex[0].second, distanceIndex[0].first.first};
-
 }
 
 std::pair<int, Point> RayTracer::findClosestPlaneIntersection(Segment const& seg)
@@ -47,28 +46,30 @@ std::pair<int, Point> RayTracer::findClosestPlaneIntersection(Segment const& seg
     Plane const& plane = planes[i];
     auto const& res = intersection(seg, plane);
     if (res.first)
-      distanceIndex.push_back({{res.second, distance(observer, res.second)}, i});
+      distanceIndex.push_back({{res.second, distance(seg.a, res.second)}, i});
   }
 
-  if(distanceIndex.empty())
+  if (distanceIndex.empty())
     return {-1, {}};
 
   std::sort(distanceIndex.begin(), distanceIndex.end(),
-              [](std::pair<std::pair<Point, double>, int> const& a,
-                 std::pair<std::pair<Point, double>, int> const& b) {
-                return a.first.second < b.first.second;
-              });
+            [](std::pair<std::pair<Point, double>, int> const& a,
+               std::pair<std::pair<Point, double>, int> const& b) {
+              return a.first.second < b.first.second;
+            });
 
   return {distanceIndex[0].second, distanceIndex[0].first.first};
-
 }
 
 
-RGB RayTracer::processPixelOnSphere(Point const& pointOnSphere, size_t sphereIndex)
+RGB RayTracer::processPixelOnSphere(Point const& rayBeg, Point const& pointOnSphere,
+                                    size_t sphereIndex, int recursionLevel)
 {
+  RGB resultCol;
+
   Point const& center = spheres[sphereIndex].center;
   double radius = spheres[sphereIndex].radius;
-  RGB rgb = spheres[sphereIndex].color;
+  RGB basicColor = spheres[sphereIndex].color;
 
   bool isInShadow = false;
 
@@ -92,7 +93,7 @@ RGB RayTracer::processPixelOnSphere(Point const& pointOnSphere, size_t sphereInd
 
   if (isInShadow)
   {
-    return rgb * ambientCoefficient;
+    resultCol = basicColor * ambientCoefficient;
   }
   else
   {
@@ -104,12 +105,29 @@ RGB RayTracer::processPixelOnSphere(Point const& pointOnSphere, size_t sphereInd
     normalize(unitVec);
     double dot = dotProduct(normalVector, unitVec);
 
-    return rgb * (std::max(0.0, diffuseCoefficient * dot) + ambientCoefficient);
+    resultCol = basicColor * (std::max(0.0, diffuseCoefficient * dot) + ambientCoefficient);
   }
+
+  if (recursionLevel >= maxRecursionLevel
+      || isCloseToZero(spheres[sphereIndex].reflectionCoefficient))
+    return resultCol;
+
+  Segment refl = reflection({rayBeg, pointOnSphere}, spheres[sphereIndex]);
+  RGB reflectedColor = processPixel(refl, recursionLevel + 1);
+
+  double refC = spheres[sphereIndex].reflectionCoefficient;
+  resultCol = resultCol * (1.0 - refC);
+  resultCol.r += reflectedColor.r * refC;
+  resultCol.g += reflectedColor.g * refC;
+  resultCol.b += reflectedColor.b * refC;
+
+  return resultCol;
 }
 
-RGB RayTracer::processPixelOnPlane(Point const& pointOnPlane, size_t planeIndex)
+RGB RayTracer::processPixelOnPlane(Point const& rayBeg, Point const& pointOnPlane,
+                                   size_t planeIndex, int recursionLevel)
 {
+  RGB resultCol;
   bool isInShadow = false;
 
   for (size_t i = 0; i < spheres.size(); i++)
@@ -131,47 +149,55 @@ RGB RayTracer::processPixelOnPlane(Point const& pointOnPlane, size_t planeIndex)
   }
 
   if (isInShadow)
-    return planes[planeIndex].color * ambientCoefficient;
+    resultCol = planes[planeIndex].color * ambientCoefficient;
+  else
+  {
+    Point unitVec = {light.x - pointOnPlane.x, light.y - pointOnPlane.y, light.z - pointOnPlane.z};
+    normalize(unitVec);
+    double dot = dotProduct(planes[planeIndex].normal, unitVec);
+    resultCol =
+        planes[planeIndex].color * (std::max(0.0, diffuseCoefficient * dot) + ambientCoefficient);
+  }
 
-  Point unitVec = {light.x - pointOnPlane.x, light.y - pointOnPlane.y,
-                   light.z - pointOnPlane.z};
-  normalize(unitVec);
-  double dot = dotProduct(planes[planeIndex].normal, unitVec);
-  
-  // check if light is not from the other side - it probably should be done in a different way
-  Point nor = planes[planeIndex].normal;
-  nor.x = -nor.x;
-  nor.y = -nor.y;
-  nor.z = -nor.z;
+  if (recursionLevel >= maxRecursionLevel
+      || isCloseToZero(planes[planeIndex].reflectionCoefficient))
+    return resultCol;
 
-  double dot2 = dotProduct(nor, unitVec);
-  dot = std::max(dot, dot2);
+  Segment refl = reflection({rayBeg, pointOnPlane}, planes[planeIndex]);
 
-  return planes[planeIndex].color * (std::max(0.0, diffuseCoefficient * dot) + ambientCoefficient);
+  RGB reflectedColor = processPixel(refl, recursionLevel + 1);
 
+  double refC = planes[planeIndex].reflectionCoefficient;
+  resultCol = resultCol * (1.0 - refC);
+  resultCol.r += reflectedColor.r * refC;
+  resultCol.g += reflectedColor.g * refC;
+  resultCol.b += reflectedColor.b * refC;
+
+  return resultCol;
 }
 
-RGB RayTracer::processPixel(Point const& point)
+RGB RayTracer::processPixel(Segment const& ray, int recursionLevel)
 {
+  std::pair<int, Point> sphereIntersection = findClosestSphereIntersection(ray);
+  std::pair<int, Point> planeIntersection = findClosestPlaneIntersection(ray);
 
-  Segment seg{observer, point};
-
-  std::pair<int, Point> sphereIntersection = findClosestSphereIntersection(seg);
-  std::pair<int, Point> planeIntersection = findClosestPlaneIntersection(seg);
-
-  if(sphereIntersection.first != -1 && planeIntersection.first != -1)
+  if (sphereIntersection.first != -1 && planeIntersection.first != -1)
   {
-    if(distance(point, sphereIntersection.second) < distance(point, planeIntersection.second))
-      return processPixelOnSphere(sphereIntersection.second, sphereIntersection.first);
+    if (distance(ray.a, sphereIntersection.second) < distance(ray.a, planeIntersection.second))
+      return processPixelOnSphere(ray.a, sphereIntersection.second, sphereIntersection.first,
+                                  recursionLevel);
     else
-      return processPixelOnPlane(planeIntersection.second, planeIntersection.first);
+      return processPixelOnPlane(ray.a, planeIntersection.second, planeIntersection.first,
+                                 recursionLevel);
   }
 
   if (sphereIntersection.first != -1)
-    return processPixelOnSphere(sphereIntersection.second, sphereIntersection.first);
-  
+    return processPixelOnSphere(ray.a, sphereIntersection.second, sphereIntersection.first,
+                                recursionLevel);
+
   if (planeIntersection.first != -1)
-    return processPixelOnPlane(planeIntersection.second, planeIntersection.first);
+    return processPixelOnPlane(ray.a, planeIntersection.second, planeIntersection.first,
+                               recursionLevel);
 
   return processPixelOnBackground();
 }
@@ -181,10 +207,12 @@ void RayTracer::processPixels()
   for (int y = -imageY; y < imageY; ++y)
     for (int z = -imageZ; z < imageZ; ++z)
     {
-
-      RGB const& color = processPixel( {imageX, static_cast<double>(y) / antiAliasing,
-                             static_cast<double>(z) / antiAliasing});
-      bitmap[static_cast<double>(y) / antiAliasing + imageY][static_cast<double>(z) / antiAliasing + imageZ] = color;
+      RGB const& color = processPixel(
+          {observer,
+           {imageX, static_cast<double>(y) / antiAliasing, static_cast<double>(z) / antiAliasing}},
+          0);
+      bitmap[static_cast<double>(y) / antiAliasing + imageY]
+            [static_cast<double>(z) / antiAliasing + imageZ] = color;
     }
 }
 void RayTracer::printBitmap()

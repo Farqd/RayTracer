@@ -3,8 +3,8 @@
 
 #include "structures.h"
 
+#include <algorithm>
 #include <vector>
-#include <algorithm> 
 
 double vectorlen(Vector const& vec);
 
@@ -23,5 +23,8 @@ double distance(Point const& a, Point const& b);
 std::pair<bool, Point> intersection(Segment segment, Sphere sphere);
 
 std::pair<bool, Point> intersection(Segment segment, Plane plane);
+
+Segment reflection(Segment const& segment, Sphere const& sphere);
+Segment reflection(Segment const& segment, Plane const& plane);
 
 #endif // UTILS_H

@@ -12,6 +12,7 @@ class RayTracer
 {
   // for antiAliasing = 4, 16 pixels are generated for each one from final scene
   static int const antiAliasing = 2;
+  static int const maxRecursionLevel = 3;
 
   Point const observer = {0, 0, 0};
   Point const light = {1000, 2000, 2500};
@@ -27,16 +28,17 @@ class RayTracer
   double const diffuseCoefficient = 0.9;
   double const ambientCoefficient = 0.1;
 
-  RGB processPixel(Point const& point);
+  RGB processPixel(Segment const& ray, int recursionLevel);
   RGB processPixelOnBackground();
-  RGB processPixelOnSphere(Point const& pointOnSphere, size_t sphereIndex);
-  RGB processPixelOnPlane(Point const& pointOnPlane, size_t planeIndex);
+  RGB processPixelOnSphere(Point const& rayBeg, Point const& pointOnSphere, size_t sphereIndex,
+                           int recursionLevel);
+  RGB processPixelOnPlane(Point const& rayBeg, Point const& pointOnPlane, size_t planeIndex,
+                          int recursionLevel);
   std::pair<int, Point> findClosestSphereIntersection(Segment const& seg);
   std::pair<int, Point> findClosestPlaneIntersection(Segment const& seg);
 
 
 public:
-  
   void processPixels();
   void printBitmap();
 

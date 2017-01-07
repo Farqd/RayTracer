@@ -7,8 +7,8 @@
 #include <array>
 #include <iomanip>
 #include <iostream>
+#include <thread>
 #include <vector>
-
 
 RGB RayTracer::processPixelOnBackground()
 {
@@ -202,19 +202,33 @@ RGB RayTracer::processPixel(Segment const& ray, int recursionLevel)
   return processPixelOnBackground();
 }
 
-void RayTracer::processPixels()
+void RayTracer::processPixelsThreads(int threadId)
 {
-  for (int y = -imageY; y < imageY; ++y)
+  for (int y = -imageY + threadId; y < imageY; y += threadNumber)
     for (int z = -imageZ; z < imageZ; ++z)
     {
       RGB const& color = processPixel(
           {observer,
            {imageX, static_cast<double>(y) / antiAliasing, static_cast<double>(z) / antiAliasing}},
           0);
+
       bitmap[static_cast<double>(y) / antiAliasing + imageY]
             [static_cast<double>(z) / antiAliasing + imageZ] = color;
     }
 }
+
+void RayTracer::processPixels()
+{
+  std::vector<std::thread> thVec;
+  for (int i = 0; i < threadNumber - 1; i++)
+    thVec.push_back(std::thread(&RayTracer::processPixelsThreads, this, i));
+
+  processPixelsThreads(threadNumber - 1);
+
+  for (int i = 0; i < threadNumber - 1; i++)
+    thVec[i].join();
+}
+
 void RayTracer::printBitmap()
 {
   // see https://en.wikipedia.org/wiki/Netpbm_format for format details

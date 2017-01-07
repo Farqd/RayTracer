@@ -12,7 +12,10 @@ class RayTracer
 {
   // for antiAliasing = 4, 16 pixels are generated for each one from final scene
   static int const antiAliasing = 2;
-  static int const maxRecursionLevel = 3;
+  static int const maxRecursionLevel = 1;
+
+  // We assume threadNumber < imageY
+  static int const threadNumber = 2;
 
   Point const observer = {0, 0, 0};
   Point const light = {1000, 2000, 2500};
@@ -36,7 +39,7 @@ class RayTracer
                           int recursionLevel);
   std::pair<int, Point> findClosestSphereIntersection(Segment const& seg);
   std::pair<int, Point> findClosestPlaneIntersection(Segment const& seg);
-
+  void processPixelsThreads(int threadId);
 
 public:
   void processPixels();

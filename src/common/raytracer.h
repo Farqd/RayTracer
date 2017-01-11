@@ -2,6 +2,7 @@
 #define COMMON_RAYTRACER_H
 
 #include <array>
+#include <thread>
 #include <vector>
 
 #include "common/structures_operators.h"
@@ -9,12 +10,17 @@
 class RayTracer
 {
 public:
+  RayTracer()
+    : threadNumber(std::thread::hardware_concurrency())
+  {
+    std::cerr << threadNumber << " threads available\n";
+  }
   // for antiAliasing = 4, 16 pixels are generated for each one from final scene
   static int const antiAliasing = 2;
   static int const maxRecursionLevel = 1;
 
   // We assume threadNumber < imageY
-  static int const threadNumber = 2;
+  int const threadNumber;
 
   Point const observer = {0, 0, 0};
   Point const light = {1000, 2000, 2500};

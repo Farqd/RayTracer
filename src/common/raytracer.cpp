@@ -1,7 +1,6 @@
-#include "raytracer.h"
+#include "common/raytracer.h"
 
 #include <algorithm>
-#include <array>
 #include <iomanip>
 #include <iostream>
 #include <thread>

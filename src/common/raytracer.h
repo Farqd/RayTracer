@@ -1,5 +1,5 @@
-#ifndef RAYTRACER_H
-#define RAYTRACER_H
+#ifndef COMMON_RAYTRACER_H
+#define COMMON_RAYTRACER_H
 
 #include <array>
 #include <vector>
@@ -8,6 +8,7 @@
 
 class RayTracer
 {
+public:
   // for antiAliasing = 4, 16 pixels are generated for each one from final scene
   static int const antiAliasing = 2;
   static int const maxRecursionLevel = 1;
@@ -39,7 +40,7 @@ class RayTracer
   std::pair<int, Point> findClosestPlaneIntersection(Segment const& seg);
   void processPixelsThreads(int threadId);
 
-public:
+
   void processPixels();
   void printBitmap();
 
@@ -47,4 +48,4 @@ public:
   std::vector<Plane> planes;
 };
 
-#endif // RAYTRACER_H
+#endif // COMMON_RAYTRACER_H

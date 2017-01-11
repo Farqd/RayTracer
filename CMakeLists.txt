@@ -36,21 +36,21 @@ set(DEBUG_CXX_FLAGS -ggdb)
 
 set(COMMON_SOURCE_FILES
       src/common/structures_operators.cpp
-      src/common/utils.cpp)
+      src/common/utils.cpp
+      src/common/raytracer.cpp)
 set(COMMON_HEADER_FILES
       src/common/structures.h
       src/common/structures_operators.h
+      src/common/raytracer.h
       src/common/utils.h)
 
 # CPU executable
 
 set(SOURCE_FILES
-      ${COMMON_SOURCE_FILES}
       src/main.cpp
-      src/raytracer.cpp)
+      ${COMMON_SOURCE_FILES})
 set(HEADER_FILES
-      ${COMMON_HEADER_FILES}
-      src/raytracer.h)
+      ${COMMON_HEADER_FILES})
 
 add_executable(RayTracer ${SOURCE_FILES} ${HEADER_FILES})
 
@@ -60,18 +60,18 @@ target_compile_options(RayTracer PUBLIC "$<$<CONFIG:Debug>:${DEBUG_CXX_FLAGS}>")
 target_link_libraries(RayTracer Threads::Threads)
 
 # CUDA executable
-set(CUDA_DIR src/cuda)
-
 set(CUDA_SOURCE_FILES
-      ${COMMON_SOURCE_FILES}
-      ${CUDA_DIR}/raytracing.cpp)
+      src/cuda/main.cpp
+      src/cuda/raytracercuda.cpp
+      ${COMMON_SOURCE_FILES})
 set(CUDA_CU_FILES
-      ${CUDA_DIR}/raytracing.cu)
+      src/cuda/raytracing.cu)
 set(CUDA_HEADER_FILES
+      src/cuda/raytracercuda.h
       ${COMMON_HEADER_FILES})
 
 set(CUDA_NVCC_FLAGS
-      ${CUDA_NVCC_FLAGS};
+      ${CUDA_NVCC_FLAGS}
       --compiler-options
       -O2 -std=c++11
       -gencode arch=compute_20,code=sm_20

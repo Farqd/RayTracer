@@ -1,6 +1,6 @@
 #include "cuda/raytracercuda.h"
 
-#include "cuda.h"
+#include <cuda.h>
 
 void RayTracerCuda::processPixelsCuda(std::vector<Sphere> const& spheres)
 {
@@ -98,21 +98,21 @@ void RayTracerCuda::processPixelsCuda(std::vector<Sphere> const& spheres)
     printf("cannot acquire kernel handle\n");
     exit(1);
   }
-  int iX = (int) imageX;
-  int iY = (int) imageY;
-  int iZ = (int) imageZ;
-  int aA = (int) antiAliasing;
-  double dC = (double) diffuseCoefficient;
-  double aC = (double) ambientCoefficient;
-  double oX = (double) observer.x;
-  double oY = (double) observer.y;
-  double oZ = (double) observer.z;
-  double lX = (double) light.x;
-  double lY = (double) light.y;
-  double lZ = (double) light.z;
-  unsigned char R = (unsigned char) background.r;
-  unsigned char G = (unsigned char) background.g;
-  unsigned char B = (unsigned char) background.b;
+  int iX = imageX;
+  int iY = imageY;
+  int iZ = imageZ;
+  int aA = antiAliasing;
+  double dC = diffuseCoefficient;
+  double aC = ambientCoefficient;
+  double oX = observer.x;
+  double oY = observer.y;
+  double oZ = observer.z;
+  double lX = light.x;
+  double lY = light.y;
+  double lZ = light.z;
+  uint8_t R = background.r;
+  uint8_t G = background.g;
+  uint8_t B = background.b;
 
   void* args[] = {&spheresDev, &spheresNum, &bitmapDev, &iX, &iY, &iZ, &aA, &dC, &aC,
                   &oX,         &oY,         &oZ,        &lX, &lY, &lZ, &R,  &G,  &B};

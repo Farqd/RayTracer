@@ -1,25 +1,27 @@
+#include <cfloat>
 #include <cstdio>
+#include <cstdint>
+
+#include <host_defines.h>
+#include <device_launch_parameters.h>
+#include <math_functions.h>
 
 #include "common/structures.h"
 
-struct pairPd
+struct IntersectionResult
 {
-  Point first;
-  double second;
-};
-
-struct pairbp
-{
-  bool first;
-  pairPd second;
+  bool intersects;
+  Point intersectionPoint;
 };
 
 extern "C" {
+
 __device__ bool isCloseToZero(double x)
 {
-  return abs(x) < 0.00000001;
+  return abs(x) < DBL_EPSILON;
 }
-__device__ inline RGB operator*(RGB rgb, double const& times)
+
+__device__ RGB operator*(RGB rgb, double const& times)
 {
   rgb.r *= times;
   rgb.g *= times;
@@ -27,7 +29,13 @@ __device__ inline RGB operator*(RGB rgb, double const& times)
 
   return rgb;
 }
-__device__ pairbp intersection(Segment segment, Sphere sphere)
+
+__device__ double distance(Point const& a, Point const& b)
+{
+  return sqrt(pow(b.x - a.x, 2) + pow(b.y - a.y, 2) + pow(b.z - a.z, 2));
+}
+
+__device__ IntersectionResult intersection(Segment segment, Sphere sphere)
 {
   double x0 = segment.a.x;
   double y0 = segment.a.y;
@@ -57,7 +65,7 @@ __device__ pairbp intersection(Segment segment, Sphere sphere)
   double t = (-b - sqrt(discriminant)) / (2 * a);
   if (t < 0)
     return {false, {}};
-  return {true, {{x0 + t * dx, y0 + t * dy, z0 + t * dz}, t}};
+  return {true, {x0 + t * dx, y0 + t * dy, z0 + t * dz}};
 }
 
 
@@ -65,15 +73,18 @@ __device__ double vectorlen(Point const& vec)
 {
   return sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
 }
+
 __device__ double dotProduct(Point const& a, Point const& b)
 {
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
+
 __device__ bool pointInShadow(Point const& point, Point const& light, Sphere const& sphere)
 {
   Segment seg = {point, light};
-  return intersection(seg, sphere).first;
+  return intersection(seg, sphere).intersects;
 }
+
 __device__ void normalize(Point& vec)
 {
   double len = vectorlen(vec);
@@ -89,12 +100,9 @@ __device__ void processPixelOnBackground(RGB* bitmap, Sphere* spheres, Point con
 {
   int idx = ((blockIdx.x * blockDim.x) + threadIdx.x) * imageZ * 2 + (blockIdx.y * blockDim.y)
             + threadIdx.y;
-  // int idx = (pixel.y + imageY)*imageZ*2 +  pixel.z + imageZ;
 
   if (pixel.y - observer.y >= 0)
   {
-    // bitmap[pixel.y + imageY][pixel.z + imageZ] = {30, 30, 30};
-
     bitmap[idx].r = 30;
     bitmap[idx].g = 30;
     bitmap[idx].b = 30;
@@ -111,11 +119,10 @@ __device__ void processPixelOnBackground(RGB* bitmap, Sphere* spheres, Point con
   Segment seg = {pointOnFloor, light};
 
   bool isInShadow = false;
-  // for(auto const& sphere : spheres)
   for (int i = 0; i < spheresNum; ++i)
   {
     Sphere sphere = spheres[i];
-    if (intersection(seg, sphere).first)
+    if (intersection(seg, sphere).intersects)
     {
       isInShadow = true;
       break;
@@ -124,9 +131,6 @@ __device__ void processPixelOnBackground(RGB* bitmap, Sphere* spheres, Point con
 
   if (isInShadow)
   {
-    // bitmap[pixel.y + imageY][pixel.z + imageZ] = { uint8_t(background.r/2),
-    // uint8_t(background.g/2), uint8_t(background.b/2)};
-
     bitmap[idx].r = background.r / 2;
     bitmap[idx].g = background.g / 2;
     bitmap[idx].b = background.b / 2;
@@ -138,17 +142,21 @@ __device__ void processPixelOnBackground(RGB* bitmap, Sphere* spheres, Point con
   }
 }
 
-__global__ void processPixel(Sphere* spheres, int spheresNum, RGB* bitmap, int imageX, int imageY,
-                             int imageZ, int antiAliasing, double diffuseCoefficient,
-                             double ambientCoefficient, double observerX, double observerY,
-                             double observerZ, double lX, double lY, double lZ, unsigned char R,
-                             unsigned char G, unsigned char B)
+__global__ void processPixel(Sphere* spheres,
+                             int spheresNum,
+                             RGB* bitmap,
+                             int imageX, int imageY, int imageZ,
+                             int antiAliasing,
+                             double diffuseCoefficient,
+                             double ambientCoefficient,
+                             double observerX, double observerY, double observerZ,
+                             double lX, double lY, double lZ,
+                             uint8_t R, uint8_t G, uint8_t B)
 {
   Point const observer = {observerX, observerY, observerZ};
   Point const light = {lX, lY, lZ};
   RGB background = {R, G, B};
 
-  // int idx = (pixel.y + imageY)*imageZ*2 +  pixel.z + imageZ;
   int thidX = (blockIdx.x * blockDim.x) + threadIdx.x;
   int thidY = (blockIdx.y * blockDim.y) + threadIdx.y;
 
@@ -158,52 +166,42 @@ __global__ void processPixel(Sphere* spheres, int spheresNum, RGB* bitmap, int i
     Point point{imageX, ((double) (thidX - imageY)) / antiAliasing,
                 ((double) (thidY - imageZ)) / antiAliasing};
 
-    // Point point{imageX, (thidX-imageY), (thidY-imageZ)};
     Segment seg{observer, point};
-    // std::vector<std::pair<std::pair<Point, double>, size_t>> distanceIndex;
+
     Point dIff;
     double dIfs;
     size_t dIs;
 
     bool intersected = false;
-    // for(size_t i = 0; i<spheres.size(); i++)
 
     for (int i = 0; i < spheresNum; ++i)
     {
       Sphere const& sphere = spheres[i];
-      pairbp const& res = intersection(seg, sphere);
-      if (res.first)
+      IntersectionResult const& res = intersection(seg, sphere);
+      if (res.intersects)
       {
-        if (!intersected || res.second.second < dIfs)
+        double dist = distance(seg.a, res.intersectionPoint);
+        if (!intersected || dist < dIfs)
         {
-          dIff = res.second.first;
-          dIfs = res.second.second;
+          dIff = res.intersectionPoint;
+          dIfs = dist;
           dIs = i;
         }
         intersected = true;
-
-        // distanceIndex.push_back({ {res.second}, i});
       }
     }
 
-    // if(!distanceIndex.empty())
     if (intersected)
     {
-      // std::sort(distanceIndex.begin(), distanceIndex.end(),
-      //	[](std::pair<std::pair<Point, double>, int> const& a, std::pair<std::pair<Point, double>,
-      //int> const& b)
-      //	{ return a.first.second < b.first.second; } );
-
-      Point const& pointOnSphere = dIff; // distanceIndex[0].first.first;
-      Point const& center = spheres[dIs].center; // spheres[distanceIndex[0].second].center;
-      double radius = spheres[dIs].radius; // spheres[distanceIndex[0].second].radius;
-      RGB rgb = spheres[dIs].color; // spheres[distanceIndex[0].second].color;
+      Point const& pointOnSphere = dIff;
+      Point const& center = spheres[dIs].center;
+      double radius = spheres[dIs].radius;
+      RGB rgb = spheres[dIs].color;
 
       bool isInShadow = false;
-      // for(size_t i=0; i<spheres.size(); i++)
+
       for (int i = 0; i < spheresNum; ++i)
       {
-        // if(i != distanceIndex[0].second && pointInShadow(pointOnSphere, light, spheres[i]))
         if (i != dIs && pointInShadow(pointOnSphere, light, spheres[i]))
         {
           isInShadow = true;

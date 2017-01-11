@@ -1,88 +1,20 @@
-//#include "raytracer.h"
-
-//#include "structures.h"
-
 #include <algorithm>
 #include <array>
+#include <cmath>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
+#include <limits>
+#include <utility>
 #include <vector>
 
 #include "cuda.h"
-#include <cstdio>
-#include <cstdlib>
 
-//#include "structures.h"
-
-#include <cmath>
-#include <limits>
-#include <utility>
-
-
-#include <array>
-#include <vector>
-
-#include <cmath>
-#include <cstdint>
-#include <iostream>
-#include <limits>
-#include <utility>
-
-struct RGB
-{
-  unsigned char r;
-  unsigned char g;
-  unsigned char b;
-};
-
-inline RGB operator*(RGB rgb, double const& times)
-{
-  rgb.r *= times;
-  rgb.g *= times;
-  rgb.b *= times;
-
-  return rgb;
-}
-
-std::ostream& operator<<(std::ostream& outs, RGB const& rgb);
-
-struct Point
-{
-  double x;
-  double y;
-  double z;
-};
-
-std::ostream& operator<<(std::ostream& outs, Point const& point);
-
-struct Sphere
-{
-  Point center;
-  double radius;
-  RGB color;
-};
-std::ostream& operator<<(std::ostream& outs, Sphere const& sphere);
-
-struct Segment
-{
-  Point a;
-  Point b;
-};
-std::ostream& operator<<(std::ostream& outs, Segment const& segment);
-
-
-template <typename T>
-bool isCloseToZero(T x)
-{
-  return std::abs(x) < std::numeric_limits<T>::epsilon();
-}
-
-// Returns true if intersection exists
-// If two points of intersection exist closest is returned
-std::pair<bool, std::pair<Point, double>> intersection(Segment segment, Sphere sphere);
-
-using Vector = Point;
-
+#include "common/structures.h"
+#include "common/structures_operators.h"
+#include "common/utils.h"
 
 class RayTracer
 {
@@ -114,7 +46,7 @@ public:
 };
 
 
-std::pair<bool, std::pair<Point, double>> intersection(Segment segment, Sphere sphere)
+std::pair<bool, std::pair<Point, double>> intersection_old(Segment segment, Sphere sphere)
 {
   double x0 = segment.a.x;
   double y0 = segment.a.y;
@@ -147,58 +79,6 @@ std::pair<bool, std::pair<Point, double>> intersection(Segment segment, Sphere s
   return {true, {{x0 + t * dx, y0 + t * dy, z0 + t * dz}, t}};
 }
 
-
-std::ostream& operator<<(std::ostream& outs, RGB const& rgb)
-{
-  outs << static_cast<int16_t>(rgb.r) << " " << static_cast<int16_t>(rgb.g) << " "
-       << static_cast<int16_t>(rgb.b);
-  return outs;
-}
-
-std::ostream& operator<<(std::ostream& outs, Point const& point)
-{
-  outs << "{ " << point.x << " " << point.y << " " << point.z << "} ";
-  return outs;
-}
-
-std::ostream& operator<<(std::ostream& outs, Segment const& segment)
-{
-  outs << "A: " << segment.a << " B: " << segment.b;
-  return outs;
-}
-
-std::ostream& operator<<(std::ostream& outs, Sphere const& sphere)
-{
-  outs << "Center: " << sphere.center << " R: " << sphere.radius;
-  return outs;
-}
-namespace
-{
-double vectorlen(Vector const& vec)
-{
-  return std::sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
-}
-
-double dotProduct(Vector const& a, Vector const& b)
-{
-  return a.x * b.x + a.y * b.y + a.z * b.z;
-}
-
-bool pointInShadow(Point const& point, Point const& light, Sphere const& sphere)
-{
-  Segment seg = {point, light};
-  return intersection(seg, sphere).first;
-}
-
-void normalize(Vector& vec)
-{
-  double len = vectorlen(vec);
-  vec.x = vec.x / len;
-  vec.y = vec.y / len;
-  vec.z = vec.z / len;
-}
-}
-
 void RayTracer::processPixelOnBackground(std::vector<Sphere> const& spheres, Point const& pixel)
 {
   if (pixel.y - observer.y >= 0)
@@ -219,7 +99,7 @@ void RayTracer::processPixelOnBackground(std::vector<Sphere> const& spheres, Poi
   bool isInShadow = false;
   for (auto const& sphere : spheres)
   {
-    if (intersection(seg, sphere).first)
+    if (intersection_old(seg, sphere).first)
     {
       isInShadow = true;
       break;
@@ -241,7 +121,7 @@ void RayTracer::processPixel(std::vector<Sphere> const& spheres, Point const& po
   for (size_t i = 0; i < spheres.size(); i++)
   {
     Sphere const& sphere = spheres[i];
-    auto const& res = intersection(seg, sphere);
+    auto const& res = intersection_old(seg, sphere);
     if (res.first)
       distanceIndex.push_back({{res.second}, i});
   }
@@ -496,17 +376,9 @@ int main()
   std::cout << std::fixed;
   std::cout << std::setprecision(3);
   int i = 0;
-  // std::cout<<"ASDA";
-  // std::cin>>i;
+
   RayTracer tracer;
-  // std::cout<<"ASdADADAD";
-  // std::cin>>i;
-  /*Segment seg{{0, 0, 0}, {100, 100,0}};
-  Sphere sp{{100, 100, 0}, 20};
-  auto const& res = intersection(seg, sp);
-  if(res.first)
-    std::cout<<res.second.first<<" "<<res.second.second<<std::endl;
-  */
+
   std::vector<Sphere> spheres;
 
   spheres.push_back({{2500, 200, -600}, 600, {200, 0, 0}});

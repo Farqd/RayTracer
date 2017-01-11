@@ -1,12 +1,11 @@
-#include "raytracer.h"
-#include "structures.h"
-
 #include <algorithm>
 #include <array>
 #include <iomanip>
 #include <iostream>
 #include <vector>
 
+#include "common/structures_operators.h"
+#include "raytracer.h"
 
 int main()
 {

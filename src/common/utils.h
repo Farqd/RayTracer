@@ -1,10 +1,10 @@
-#ifndef UTILS_H
-#define UTILS_H
-
-#include "structures.h"
+#ifndef COMMON_UTILS_H
+#define COMMON_UTILS_H
 
 #include <algorithm>
 #include <vector>
+
+#include "common/structures.h"
 
 double vectorlen(Vector const& vec);
 
@@ -25,6 +25,13 @@ std::pair<bool, Point> intersection(Segment segment, Sphere sphere);
 std::pair<bool, Point> intersection(Segment segment, Plane plane);
 
 Segment reflection(Segment const& segment, Sphere const& sphere);
+
 Segment reflection(Segment const& segment, Plane const& plane);
 
-#endif // UTILS_H
+template <typename T>
+bool isCloseToZero(T x)
+{
+  return std::abs(x) < std::numeric_limits<T>::epsilon();
+}
+
+#endif // COMMON_UTILS_H

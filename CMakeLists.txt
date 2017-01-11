@@ -25,23 +25,32 @@ message("INFO: ${CUDA_HOST_COMPILER} will be used to compile CUDA files.")
 
 # Common
 
+set(BASEPATH "${CMAKE_SOURCE_DIR}/src")
+include_directories("${BASEPATH}")
+
 set(CMAKE_CXX_FLAGS "-Wall -Wextra") # forget previous flags to avoid unwanted errors
 
 set(CMAKE_CXX_STANDARD 14)
 set(RELEASE_CXX_FLAGS -Werror -O2)
 set(DEBUG_CXX_FLAGS -ggdb)
 
+set(COMMON_SOURCE_FILES
+      src/common/structures_operators.cpp
+      src/common/utils.cpp)
+set(COMMON_HEADER_FILES
+      src/common/structures.h
+      src/common/structures_operators.h
+      src/common/utils.h)
+
 # CPU executable
 
 set(SOURCE_FILES
+      ${COMMON_SOURCE_FILES}
       src/main.cpp
-      src/raytracer.cpp
-      src/structures.cpp
-      src/utils.cpp)
+      src/raytracer.cpp)
 set(HEADER_FILES
-      src/raytracer.h
-      src/structures.h
-      src/utils.h)
+      ${COMMON_HEADER_FILES}
+      src/raytracer.h)
 
 add_executable(RayTracer ${SOURCE_FILES} ${HEADER_FILES})
 
@@ -54,10 +63,12 @@ target_link_libraries(RayTracer Threads::Threads)
 set(CUDA_DIR src/cuda)
 
 set(CUDA_SOURCE_FILES
+      ${COMMON_SOURCE_FILES}
       ${CUDA_DIR}/raytracing.cpp)
 set(CUDA_CU_FILES
       ${CUDA_DIR}/raytracing.cu)
-set(CUDA_HEADER_FILES)
+set(CUDA_HEADER_FILES
+      ${COMMON_HEADER_FILES})
 
 set(CUDA_NVCC_FLAGS
       ${CUDA_NVCC_FLAGS};

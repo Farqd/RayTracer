@@ -1,40 +1,17 @@
 #include <cstdio>
 
-struct Point
-{
-  double x;
-  double y;
-  double z;
-};
+#include "common/structures.h"
+
 struct pairPd
 {
   Point first;
   double second;
 };
+
 struct pairbp
 {
   bool first;
   pairPd second;
-};
-struct RGB
-{
-  unsigned char r;
-  unsigned char g;
-  unsigned char b;
-};
-
-
-struct Sphere
-{
-  Point center;
-  double radius;
-  RGB color;
-};
-
-struct Segment
-{
-  Point a;
-  Point b;
 };
 
 extern "C" {

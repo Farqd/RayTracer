@@ -1,10 +1,10 @@
-#include "utils.h"
-
-#include "structures.h"
+#include "common/utils.h"
 
 #include <algorithm>
 #include <cmath>
 #include <vector>
+
+#include "common/structures.h"
 
 double vectorlen(Vector const& vec)
 {

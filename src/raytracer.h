@@ -1,12 +1,10 @@
 #ifndef RAYTRACER_H
 #define RAYTRACER_H
 
-#include "structures.h"
-
-
 #include <array>
 #include <vector>
 
+#include "common/structures_operators.h"
 
 class RayTracer
 {

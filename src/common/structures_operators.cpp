@@ -1,12 +1,10 @@
-#include "structures.h"
-
-#include "utils.h"
+#include "common/structures_operators.h"
 
 #include <cmath>
 #include <limits>
 #include <utility>
 
-std::ostream& operator<<(std::ostream& outs, RGB const& rgb)
+std::ostream& operator<<(std::ostream& outs, RGB rgb)
 {
   outs << static_cast<int16_t>(rgb.r) << " " << static_cast<int16_t>(rgb.g) << " "
        << static_cast<int16_t>(rgb.b);

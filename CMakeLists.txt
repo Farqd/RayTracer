@@ -1,7 +1,37 @@
 cmake_minimum_required(VERSION 3.1)
 project(RayTracer)
 
+# Packages
+
+find_package(CUDA QUIET REQUIRED)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
+# Prerequisites
+
+if (CUDA_HOST_COMPILER STREQUAL CMAKE_C_COMPILER)
+   if (CMAKE_C_COMPILER_VERSION VERSION_GREATER 5)
+      set(CUDA_HOST_COMPILER /usr/bin/gcc-5)
+      message("WARNING: CUDA does not support gcc version later than 5."
+            " Trying with ${CUDA_HOST_COMPILER}.")
+      if (NOT EXISTS ${CUDA_HOST_COMPILER})
+         message(FATAL_ERROR
+               "CUDA compatible compiler not found!"
+               " Run cmake again with -DCUDA_HOST_COMPILER=<path/to/gcc>")
+      endif ()
+   endif ()
+endif ()
+message("INFO: ${CUDA_HOST_COMPILER} will be used to compile CUDA files.")
+
+# Common
+
+set(CMAKE_CXX_FLAGS "-Wall -Wextra") # forget previous flags to avoid unwanted errors
+
 set(CMAKE_CXX_STANDARD 14)
+set(RELEASE_CXX_FLAGS -Werror -O2)
+set(DEBUG_CXX_FLAGS -ggdb)
+
+# CPU executable
 
 set(SOURCE_FILES
       src/main.cpp
@@ -15,13 +45,29 @@ set(HEADER_FILES
 
 add_executable(RayTracer ${SOURCE_FILES} ${HEADER_FILES})
 
-set(RELEASE_CXX_FLAGS -Wall -Werror -Wextra -O2)
-set(DEBUG_CXX_FLAGS -Wall -Wextra -ggdb)
-
-
 target_compile_options(RayTracer PUBLIC "$<$<CONFIG:Release>:${RELEASE_CXX_FLAGS}>")
 target_compile_options(RayTracer PUBLIC "$<$<CONFIG:Debug>:${DEBUG_CXX_FLAGS}>")
 
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
 target_link_libraries(RayTracer Threads::Threads)
+
+# CUDA executable
+set(CUDA_DIR src/cuda)
+
+set(CUDA_SOURCE_FILES
+      ${CUDA_DIR}/raytracing.cpp)
+set(CUDA_CU_FILES
+      ${CUDA_DIR}/raytracing.cu)
+set(CUDA_HEADER_FILES)
+
+set(CUDA_NVCC_FLAGS
+      ${CUDA_NVCC_FLAGS};
+      --compiler-options
+      -O2 -std=c++11
+      -gencode arch=compute_20,code=sm_20
+      -Wno-deprecated-gpu-targets)
+
+cuda_add_executable(
+      RayTracerCuda
+      ${CUDA_SOURCE_FILES} ${CUDA_CU_FILES} ${CUDA_HEADER_FILES})
+
+target_link_libraries(RayTracerCuda "${CUDA_LIBRARIES}" cuda)

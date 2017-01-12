@@ -1,42 +1,40 @@
 #include "cuda/raytracercuda.h"
 
 #include <cuda.h>
+#include <cuda_runtime_api.h>
+
+#define CU_CHECK(ans)                                                                              \
+  {                                                                                                \
+    cuAssert((ans), __FILE__, __LINE__);                                                           \
+  }
+inline void cuAssert(CUresult code, const char* file, int line, bool abort = true)
+{
+  if (code != CUDA_SUCCESS)
+  {
+    const char* error_string;
+    cuGetErrorString(code, &error_string);
+    std::cerr << file << ":" << line << " - CUDA error (" << code << "): " << error_string
+              << std::endl;
+    if (abort)
+      exit(code);
+  }
+}
 
 void RayTracerCuda::processPixelsCuda(std::vector<Sphere> const& spheres)
 {
   cuInit(0);
 
   CUdevice cuDevice;
-  CUresult res = cuDeviceGet(&cuDevice, 0);
-  if (res != CUDA_SUCCESS)
-  {
-    printf("cannot acquire device 0\n");
-    exit(1);
-  }
+  CU_CHECK(cuDeviceGet(&cuDevice, 0));
 
   CUcontext cuContext;
-  res = cuCtxCreate(&cuContext, 0, cuDevice);
-  if (res != CUDA_SUCCESS)
-  {
-    printf("cannot create context\n");
-    exit(1);
-  }
+  CU_CHECK(cuCtxCreate(&cuContext, 0, cuDevice));
 
   CUmodule cuModule = (CUmodule) 0;
-  res = cuModuleLoad(&cuModule, "raytracing.ptx");
-  if (res != CUDA_SUCCESS)
-  {
-    printf("cannot load module: %d\n", res);
-    exit(1);
-  }
+  CU_CHECK(cuModuleLoad(&cuModule, "raytracing.ptx"));
 
   CUfunction processPixel;
-  res = cuModuleGetFunction(&processPixel, cuModule, "processPixel");
-  if (res != CUDA_SUCCESS)
-  {
-    printf("cannot acquire kernel handle\n");
-    exit(1);
-  }
+  CU_CHECK(cuModuleGetFunction(&processPixel, cuModule, "processPixel"));
 
   int blocks_per_grid_x = (2 * imageY + 31) / 32;
   int blocks_per_grid_y = (2 * imageZ + 31) / 32;
@@ -46,11 +44,7 @@ void RayTracerCuda::processPixelsCuda(std::vector<Sphere> const& spheres)
   int spheresNum = spheres.size();
 
   RGB* bitmapTab = (RGB*) malloc(sizeof(RGB) * 2 * imageY * 2 * imageZ);
-  res = cuMemHostRegister(bitmapTab, sizeof(RGB) * 2 * imageY * 2 * imageZ, 0);
-  if (res != CUDA_SUCCESS)
-  {
-    exit(1);
-  }
+  CU_CHECK(cuMemHostRegister(bitmapTab, sizeof(RGB) * 2 * imageY * 2 * imageZ, 0));
 
   for (int i = 0; i < 2 * imageY * 2 * imageZ; ++i)
   {
@@ -58,26 +52,11 @@ void RayTracerCuda::processPixelsCuda(std::vector<Sphere> const& spheres)
   }
 
   CUdeviceptr bitmapDev;
-  res = cuMemAlloc(&bitmapDev, sizeof(RGB) * (2 * imageY * 2 * imageZ));
-  if (res != CUDA_SUCCESS)
-  {
-    printf("cannot acquireB kernel handle\n");
-    exit(1);
-  }
-
-  res = cuMemcpyHtoD(bitmapDev, bitmapTab, sizeof(RGB) * (2 * imageY * 2 * imageZ));
-  if (res != CUDA_SUCCESS)
-  {
-    printf("cannot acquire kernel handle\n");
-    exit(1);
-  }
+  CU_CHECK(cuMemAlloc(&bitmapDev, sizeof(RGB) * (2 * imageY * 2 * imageZ)));
+  CU_CHECK(cuMemcpyHtoD(bitmapDev, bitmapTab, sizeof(RGB) * (2 * imageY * 2 * imageZ)));
 
   Sphere* spheresTab = (Sphere*) malloc(sizeof(Sphere) * spheresNum);
-  res = cuMemHostRegister(spheresTab, sizeof(Sphere) * spheresNum, 0);
-  if (res != CUDA_SUCCESS)
-  {
-    exit(1);
-  }
+  CU_CHECK(cuMemHostRegister(spheresTab, sizeof(Sphere) * spheresNum, 0));
 
   for (int i = 0; i < spheresNum; ++i)
   {
@@ -85,19 +64,9 @@ void RayTracerCuda::processPixelsCuda(std::vector<Sphere> const& spheres)
   }
 
   CUdeviceptr spheresDev;
-  res = cuMemAlloc(&spheresDev, sizeof(Sphere) * (spheresNum));
-  if (res != CUDA_SUCCESS)
-  {
-    printf("cannot acquireB kernel handle\n");
-    exit(1);
-  }
+  CU_CHECK(cuMemAlloc(&spheresDev, sizeof(Sphere) * (spheresNum)));
+  CU_CHECK(cuMemcpyHtoD(spheresDev, spheresTab, sizeof(Sphere) * (spheresNum)));
 
-  res = cuMemcpyHtoD(spheresDev, spheresTab, sizeof(Sphere) * (spheresNum));
-  if (res != CUDA_SUCCESS)
-  {
-    printf("cannot acquire kernel handle\n");
-    exit(1);
-  }
   int iX = imageX;
   int iY = imageY;
   int iZ = imageZ;
@@ -117,20 +86,10 @@ void RayTracerCuda::processPixelsCuda(std::vector<Sphere> const& spheres)
   void* args[] = {&spheresDev, &spheresNum, &bitmapDev, &iX, &iY, &iZ, &aA, &dC, &aC,
                   &oX,         &oY,         &oZ,        &lX, &lY, &lZ, &R,  &G,  &B};
 
-  res = cuLaunchKernel(processPixel, blocks_per_grid_x, blocks_per_grid_y, 1, threads_per_block_x,
-                       threads_per_block_y, 1, 0, 0, args, 0);
-  if (res != CUDA_SUCCESS)
-  {
-    printf("cannot run kernel\n");
-    exit(1);
-  }
+  CU_CHECK(cuLaunchKernel(processPixel, blocks_per_grid_x, blocks_per_grid_y, 1,
+                          threads_per_block_x, threads_per_block_y, 1, 0, 0, args, 0));
 
-  res = cuMemcpyDtoH(bitmapTab, bitmapDev, sizeof(RGB) * (2 * imageY * 2 * imageZ));
-  if (res != CUDA_SUCCESS)
-  {
-    printf("cannot acquire kernel handle\n");
-    exit(1);
-  }
+  CU_CHECK(cuMemcpyDtoH(bitmapTab, bitmapDev, sizeof(RGB) * (2 * imageY * 2 * imageZ)));
 
   for (int i = 0; i < 2 * imageY * 2 * imageZ; ++i)
   {

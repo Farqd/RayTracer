@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <thread>
 #include <vector>
 
@@ -16,48 +17,71 @@ RGB RayTracer::processPixelOnBackground()
 
 std::pair<int, Point> RayTracer::findClosestSphereIntersection(Segment const& seg)
 {
-  std::vector<std::pair<std::pair<Point, double>, size_t>> distanceIndex;
+  bool foundAny = false;
+  Point closestPoint;
+  int sphereIndex = -1;
+  double closestDistance = std::numeric_limits<double>::max();
+
   for (size_t i = 0; i < spheres.size(); i++)
   {
-    Sphere const& sphere = spheres[i];
-    auto const& res = intersection(seg, sphere);
+    auto const& res = intersection(seg, spheres[i]);
     if (res.first)
-      distanceIndex.push_back({{res.second, distance(seg.a, res.second)}, i});
+    {
+      if (!foundAny)
+      {
+        closestDistance = distance(seg.a, res.second);
+        closestPoint = res.second;
+        sphereIndex = i;
+        foundAny = true;
+      }
+      else
+      {
+        double dist = distance(seg.a, res.second);
+        if (dist < closestDistance)
+        {
+          closestDistance = dist;
+          closestPoint = res.second;
+          sphereIndex = i;
+        }
+      }
+    }
   }
-
-  if (distanceIndex.empty())
-    return {-1, {}};
-
-  std::sort(distanceIndex.begin(), distanceIndex.end(),
-            [](std::pair<std::pair<Point, double>, int> const& a,
-               std::pair<std::pair<Point, double>, int> const& b) {
-              return a.first.second < b.first.second;
-            });
-
-  return {distanceIndex[0].second, distanceIndex[0].first.first};
+  return {sphereIndex, closestPoint};
 }
 
 std::pair<int, Point> RayTracer::findClosestPlaneIntersection(Segment const& seg)
 {
-  std::vector<std::pair<std::pair<Point, double>, size_t>> distanceIndex;
+  bool foundAny = false;
+  Point closestPoint;
+  int planeIndex = -1;
+  double closestDistance = std::numeric_limits<double>::max();
+
   for (size_t i = 0; i < planes.size(); i++)
   {
-    Plane const& plane = planes[i];
-    auto const& res = intersection(seg, plane);
+    auto const& res = intersection(seg, planes[i]);
     if (res.first)
-      distanceIndex.push_back({{res.second, distance(seg.a, res.second)}, i});
+    {
+      if (!foundAny)
+      {
+        closestDistance = distance(seg.a, res.second);
+        closestPoint = res.second;
+        planeIndex = i;
+        foundAny = true;
+      }
+      else
+      {
+        double dist = distance(seg.a, res.second);
+        if (dist < closestDistance)
+        {
+          closestDistance = dist;
+          closestPoint = res.second;
+          planeIndex = i;
+        }
+      }
+    }
   }
 
-  if (distanceIndex.empty())
-    return {-1, {}};
-
-  std::sort(distanceIndex.begin(), distanceIndex.end(),
-            [](std::pair<std::pair<Point, double>, int> const& a,
-               std::pair<std::pair<Point, double>, int> const& b) {
-              return a.first.second < b.first.second;
-            });
-
-  return {distanceIndex[0].second, distanceIndex[0].first.first};
+  return {planeIndex, closestPoint};
 }
 
 
@@ -211,8 +235,7 @@ void RayTracer::processPixelsThreads(int threadId)
            {imageX, static_cast<double>(y) / antiAliasing, static_cast<double>(z) / antiAliasing}},
           0);
 
-      bitmap[static_cast<double>(y) / antiAliasing + imageY]
-            [static_cast<double>(z) / antiAliasing + imageZ] = color;
+      bitmap[y + imageY][z + imageZ] = color;
     }
 }
 

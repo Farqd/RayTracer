@@ -28,6 +28,7 @@ make
 
 * `CMAKE_BUILD_TYPE=[Debug|Release]` - target build type
 * `CUDA_HOST_COMPILER=<path/to/gcc>` - path to CUDA-compatible compiler, by default points to `CMAKE_C_COMPILER`
+* `CUDA_TOOLKIT_ROOT_DIR=<path/to/cuda>` - path to CUDA installation directory
 
 # Running
 

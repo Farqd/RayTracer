@@ -3,14 +3,17 @@ project(RayTracer)
 
 # Packages
 
-find_package(CUDA QUIET REQUIRED)
+find_package(CUDA)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-# Prerequisites
-
-if (CUDA_HOST_COMPILER STREQUAL CMAKE_C_COMPILER)
-   if (CMAKE_C_COMPILER_VERSION VERSION_GREATER 5)
+# CUDA prerequisites
+if (NOT ${CUDA_FOUND})
+   message("WARNING: CUDA CMake package not found!"
+         " If you want to run CUDA targets, rerun cmake with CUDA_TOOLKIT_ROOT_DIR specified.")
+else ()
+   if ((CUDA_HOST_COMPILER STREQUAL CMAKE_C_COMPILER)
+         AND (CMAKE_C_COMPILER_VERSION VERSION_GREATER 5))
       set(CUDA_HOST_COMPILER /usr/bin/gcc-5)
       message("WARNING: CUDA does not support gcc version later than 5."
             " Trying with ${CUDA_HOST_COMPILER}.")
@@ -20,8 +23,8 @@ if (CUDA_HOST_COMPILER STREQUAL CMAKE_C_COMPILER)
                " Run cmake again with -DCUDA_HOST_COMPILER=<path/to/gcc>")
       endif ()
    endif ()
+   message("INFO: ${CUDA_HOST_COMPILER} will be used to compile CUDA files.")
 endif ()
-message("INFO: ${CUDA_HOST_COMPILER} will be used to compile CUDA files.")
 
 # Common
 
@@ -60,25 +63,42 @@ target_compile_options(RayTracer PUBLIC "$<$<CONFIG:Debug>:${DEBUG_CXX_FLAGS}>")
 target_link_libraries(RayTracer Threads::Threads)
 
 # CUDA executable
-set(CUDA_SOURCE_FILES
-      src/cuda/main.cpp
-      src/cuda/raytracercuda.cpp
-      ${COMMON_SOURCE_FILES})
-set(CUDA_CU_FILES
-      src/cuda/raytracing.cu)
-set(CUDA_HEADER_FILES
-      src/cuda/raytracercuda.h
-      ${COMMON_HEADER_FILES})
+if (CUDA_FOUND)
+   set(CUDA_SOURCE_FILES
+         src/cuda/main.cpp
+         src/cuda/raytracercuda.cpp
+         ${COMMON_SOURCE_FILES})
 
-set(CUDA_NVCC_FLAGS
-      ${CUDA_NVCC_FLAGS}
-      --compiler-options
-      -O2 -std=c++11
-      -gencode arch=compute_20,code=sm_20
-      -Wno-deprecated-gpu-targets)
+   set(CUDA_HEADER_FILES
+         src/cuda/raytracercuda.h
+         ${COMMON_HEADER_FILES})
 
-cuda_add_executable(
-      RayTracerCuda
-      ${CUDA_SOURCE_FILES} ${CUDA_CU_FILES} ${CUDA_HEADER_FILES})
+   set(CUDA_NVCC_FLAGS
+         ${CUDA_NVCC_FLAGS}
+         --compiler-options
+         -O2 -std=c++11
+         -gencode arch=compute_20,code=sm_20
+         -Wno-deprecated-gpu-targets)
 
-target_link_libraries(RayTracerCuda "${CUDA_LIBRARIES}" cuda)
+   set(CUDA_CU_FILES
+         src/cuda/raytracing.cu)
+
+   set(CUDA_PTX_FILES
+         ${CMAKE_BINARY_DIR}/raytracing.ptx)
+
+   cuda_compile_ptx(
+         CUDA_GENERATED_PTX_FILES
+         ${CUDA_CU_FILES})
+
+   add_custom_command(
+         OUTPUT ${CMAKE_BINARY_DIR}/raytracing.ptx
+         COMMAND ${CMAKE_COMMAND} -E
+         rename ${CUDA_GENERATED_PTX_FILES} ${CMAKE_BINARY_DIR}/raytracing.ptx
+         DEPENDS ${CUDA_GENERATED_PTX_FILES})
+
+   cuda_add_executable(
+         RayTracerCuda
+         ${CUDA_SOURCE_FILES} ${CUDA_PTX_FILES} ${CUDA_HEADER_FILES})
+
+   target_link_libraries(RayTracerCuda "${CUDA_LIBRARIES}" cuda)
+endif ()

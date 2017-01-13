@@ -8,7 +8,7 @@ class RayTracerCuda : public RayTracer
   RGB background = {100, 100, 200};
 
 public:
-  void processPixelsCuda(std::vector<Sphere> const& spheres);
+  void processPixelsCuda();
 };
 
 

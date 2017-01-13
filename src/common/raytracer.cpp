@@ -230,10 +230,11 @@ void RayTracer::processPixelsThreads(int threadId)
   for (int y = -imageY + threadId; y < imageY; y += threadNumber)
     for (int z = -imageZ; z < imageZ; ++z)
     {
-      RGB const& color = processPixel(
-          {observer,
-           {imageX, static_cast<double>(y) / antiAliasing, static_cast<double>(z) / antiAliasing}},
-          0);
+      RGB const& color =
+          processPixel({observer,
+                        {static_cast<double>(imageX), static_cast<double>(y) / antiAliasing,
+                         static_cast<double>(z) / antiAliasing}},
+                       0);
 
       bitmap[y + imageY][z + imageZ] = color;
     }

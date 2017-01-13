@@ -1,7 +1,6 @@
 #ifndef COMMON_RAYTRACER_H
 #define COMMON_RAYTRACER_H
 
-#include <array>
 #include <thread>
 #include <vector>
 
@@ -31,7 +30,7 @@ public:
   static int const imageY = 384 * antiAliasing;
   static int const imageZ = 512 * antiAliasing;
 
-  std::array<std::array<RGB, imageZ * 2>, imageY * 2> bitmap;
+  RGB bitmap[imageY * 2][imageZ * 2];
 
   double const diffuseCoefficient = 0.9;
   double const ambientCoefficient = 0.1;

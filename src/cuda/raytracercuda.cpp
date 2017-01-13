@@ -20,7 +20,7 @@ inline void cuAssert(CUresult code, const char* file, int line, bool abort = tru
   }
 }
 
-void RayTracerCuda::processPixelsCuda(std::vector<Sphere> const& spheres)
+void RayTracerCuda::processPixelsCuda()
 {
   cuInit(0);
 
@@ -36,32 +36,15 @@ void RayTracerCuda::processPixelsCuda(std::vector<Sphere> const& spheres)
   CUfunction processPixel;
   CU_CHECK(cuModuleGetFunction(&processPixel, cuModule, "processPixel"));
 
-  int blocks_per_grid_x = (2 * imageY + 31) / 32;
-  int blocks_per_grid_y = (2 * imageZ + 31) / 32;
-  int threads_per_block_x = 32;
-  int threads_per_block_y = 32;
-
-  int spheresNum = spheres.size();
-
-  RGB* bitmapTab = (RGB*) malloc(sizeof(RGB) * 2 * imageY * 2 * imageZ);
-  CU_CHECK(cuMemHostRegister(bitmapTab, sizeof(RGB) * 2 * imageY * 2 * imageZ, 0));
-
-  for (int i = 0; i < 2 * imageY * 2 * imageZ; ++i)
-  {
-    bitmapTab[i] = bitmap[i / (2 * imageZ)][i % (2 * imageZ)];
-  }
+  CU_CHECK(cuMemHostRegister(bitmap, sizeof(RGB) * 2 * imageY * 2 * imageZ, 0));
 
   CUdeviceptr bitmapDev;
   CU_CHECK(cuMemAlloc(&bitmapDev, sizeof(RGB) * (2 * imageY * 2 * imageZ)));
-  CU_CHECK(cuMemcpyHtoD(bitmapDev, bitmapTab, sizeof(RGB) * (2 * imageY * 2 * imageZ)));
+  CU_CHECK(cuMemcpyHtoD(bitmapDev, bitmap, sizeof(RGB) * (2 * imageY * 2 * imageZ)));
 
-  Sphere* spheresTab = (Sphere*) malloc(sizeof(Sphere) * spheresNum);
+  int spheresNum = spheres.size();
+  Sphere* spheresTab = spheres.data();
   CU_CHECK(cuMemHostRegister(spheresTab, sizeof(Sphere) * spheresNum, 0));
-
-  for (int i = 0; i < spheresNum; ++i)
-  {
-    spheresTab[i] = spheres[i];
-  }
 
   CUdeviceptr spheresDev;
   CU_CHECK(cuMemAlloc(&spheresDev, sizeof(Sphere) * (spheresNum)));
@@ -86,18 +69,18 @@ void RayTracerCuda::processPixelsCuda(std::vector<Sphere> const& spheres)
   void* args[] = {&spheresDev, &spheresNum, &bitmapDev, &iX, &iY, &iZ, &aA, &dC, &aC,
                   &oX,         &oY,         &oZ,        &lX, &lY, &lZ, &R,  &G,  &B};
 
+  int blocks_per_grid_x = (2 * imageY + 31) / 32;
+  int blocks_per_grid_y = (2 * imageZ + 31) / 32;
+  int threads_per_block_x = 32;
+  int threads_per_block_y = 32;
+
   CU_CHECK(cuLaunchKernel(processPixel, blocks_per_grid_x, blocks_per_grid_y, 1,
                           threads_per_block_x, threads_per_block_y, 1, 0, 0, args, 0));
 
-  CU_CHECK(cuMemcpyDtoH(bitmapTab, bitmapDev, sizeof(RGB) * (2 * imageY * 2 * imageZ)));
+  CU_CHECK(cuMemcpyDtoH(bitmap, bitmapDev, sizeof(RGB) * (2 * imageY * 2 * imageZ)));
 
-  for (int i = 0; i < 2 * imageY * 2 * imageZ; ++i)
-  {
-    bitmap[i / (2 * imageZ)][i % (2 * imageZ)] = bitmapTab[i];
-  }
-
-  free(bitmapTab);
-  free(spheresTab);
+  CU_CHECK(cuMemHostUnregister(bitmap));
+  CU_CHECK(cuMemHostUnregister(spheresTab));
 
   cuCtxDestroy(cuContext);
 }

@@ -163,8 +163,9 @@ __global__ void processPixel(Sphere* spheres,
 
   if (thidX < 2 * imageY && thidY < 2 * imageZ)
   {
-    Point point{imageX, ((double) (thidX - imageY)) / antiAliasing,
-                ((double) (thidY - imageZ)) / antiAliasing};
+    Point point{static_cast<double>(imageX),
+                static_cast<double>(thidX - imageY) / antiAliasing,
+                static_cast<double>(thidY - imageZ) / antiAliasing};
 
     Segment seg{observer, point};
 
@@ -218,7 +219,8 @@ __global__ void processPixel(Sphere* spheres,
         Point normalVector = {(pointOnSphere.x - center.x) / radius,
                               (pointOnSphere.y - center.y) / radius,
                               (pointOnSphere.z - center.z) / radius};
-        Point unitVec = {light.x - pointOnSphere.x, light.y - pointOnSphere.y,
+        Point unitVec = {light.x - pointOnSphere.x,
+                         light.y - pointOnSphere.y,
                          light.z - pointOnSphere.z};
         normalize(unitVec);
         double dot = dotProduct(normalVector, unitVec);

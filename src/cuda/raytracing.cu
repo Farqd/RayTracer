@@ -10,18 +10,18 @@
 
 struct IntersectionResult
 {
-  bool intersects;
   Point intersectionPoint;
+  bool intersects;
 };
 
 extern "C" {
 
-__device__ bool isCloseToZero(double x)
+__device__ bool isCloseToZero(float x)
 {
   return abs(x) < DBL_EPSILON;
 }
 
-__device__ RGB operator*(RGB rgb, double const& times)
+__device__ RGB operator*(RGB rgb, float times)
 {
   rgb.r *= times;
   rgb.g *= times;
@@ -30,51 +30,51 @@ __device__ RGB operator*(RGB rgb, double const& times)
   return rgb;
 }
 
-__device__ double distance(Point const& a, Point const& b)
+__device__ float distance(Point const& a, Point const& b)
 {
   return sqrt(pow(b.x - a.x, 2) + pow(b.y - a.y, 2) + pow(b.z - a.z, 2));
 }
 
 __device__ IntersectionResult intersection(Segment segment, Sphere sphere)
 {
-  double x0 = segment.a.x;
-  double y0 = segment.a.y;
-  double z0 = segment.a.z;
+  float x0 = segment.a.x;
+  float y0 = segment.a.y;
+  float z0 = segment.a.z;
 
-  double x1 = segment.b.x;
-  double y1 = segment.b.y;
-  double z1 = segment.b.z;
+  float x1 = segment.b.x;
+  float y1 = segment.b.y;
+  float z1 = segment.b.z;
 
-  double dx = x1 - x0;
-  double dy = y1 - y0;
-  double dz = z1 - z0;
+  float dx = x1 - x0;
+  float dy = y1 - y0;
+  float dz = z1 - z0;
 
-  double cx = sphere.center.x;
-  double cy = sphere.center.y;
-  double cz = sphere.center.z;
+  float cx = sphere.center.x;
+  float cy = sphere.center.y;
+  float cz = sphere.center.z;
 
-  double a = dx * dx + dy * dy + dz * dz;
-  double b = 2 * dx * (x0 - cx) + 2 * dy * (y0 - cy) + 2 * dz * (z0 - cz);
-  double c = cx * cx + cy * cy + cz * cz + x0 * x0 + y0 * y0 + z0 * z0
+  float a = dx * dx + dy * dy + dz * dz;
+  float b = 2 * dx * (x0 - cx) + 2 * dy * (y0 - cy) + 2 * dz * (z0 - cz);
+  float c = cx * cx + cy * cy + cz * cz + x0 * x0 + y0 * y0 + z0 * z0
              - 2 * (cx * x0 + cy * y0 + cz * z0) - sphere.radius * sphere.radius;
 
-  double discriminant = b * b - 4 * a * c;
+  float discriminant = b * b - 4 * a * c;
   if (!isCloseToZero(discriminant) && discriminant < 0)
-    return {false, {}};
+    return {{}, false};
 
-  double t = (-b - sqrt(discriminant)) / (2 * a);
+  float t = (-b - sqrt(discriminant)) / (2 * a);
   if (t < 0)
-    return {false, {}};
-  return {true, {x0 + t * dx, y0 + t * dy, z0 + t * dz}};
+    return {{}, false};
+  return {{x0 + t * dx, y0 + t * dy, z0 + t * dz}, true};
 }
 
 
-__device__ double vectorlen(Point const& vec)
+__device__ float vectorlen(Point const& vec)
 {
   return sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
 }
 
-__device__ double dotProduct(Point const& a, Point const& b)
+__device__ float dotProduct(Point const& a, Point const& b)
 {
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
@@ -87,7 +87,7 @@ __device__ bool pointInShadow(Point const& point, Point const& light, Sphere con
 
 __device__ void normalize(Point& vec)
 {
-  double len = vectorlen(vec);
+  float len = vectorlen(vec);
   vec.x = vec.x / len;
   vec.y = vec.y / len;
   vec.z = vec.z / len;
@@ -111,7 +111,7 @@ __device__ void processPixelOnBackground(RGB* bitmap, Sphere* spheres, Point con
 
   Point pointOnFloor;
   pointOnFloor.y = -400;
-  double times = -400 / (pixel.y - observer.y);
+  float times = -400 / (pixel.y - observer.y);
 
   pointOnFloor.x = (pixel.x - observer.x) * times;
   pointOnFloor.z = (pixel.z - observer.z) * times;
@@ -147,10 +147,10 @@ __global__ void processPixel(Sphere* spheres,
                              RGB* bitmap,
                              int imageX, int imageY, int imageZ,
                              int antiAliasing,
-                             double diffuseCoefficient,
-                             double ambientCoefficient,
-                             double observerX, double observerY, double observerZ,
-                             double lX, double lY, double lZ,
+                             float diffuseCoefficient,
+                             float ambientCoefficient,
+                             float observerX, float observerY, float observerZ,
+                             float lX, float lY, float lZ,
                              uint8_t R, uint8_t G, uint8_t B)
 {
   Point const observer = {observerX, observerY, observerZ};
@@ -163,14 +163,14 @@ __global__ void processPixel(Sphere* spheres,
 
   if (thidX < 2 * imageY && thidY < 2 * imageZ)
   {
-    Point point{static_cast<double>(imageX),
-                static_cast<double>(thidX - imageY) / antiAliasing,
-                static_cast<double>(thidY - imageZ) / antiAliasing};
+    Point point{static_cast<float>(imageX),
+                static_cast<float>(thidX - imageY) / antiAliasing,
+                static_cast<float>(thidY - imageZ) / antiAliasing};
 
     Segment seg{observer, point};
 
     Point dIff;
-    double dIfs;
+    float dIfs;
     size_t dIs;
 
     bool intersected = false;
@@ -181,7 +181,7 @@ __global__ void processPixel(Sphere* spheres,
       IntersectionResult const& res = intersection(seg, sphere);
       if (res.intersects)
       {
-        double dist = distance(seg.a, res.intersectionPoint);
+        float dist = distance(seg.a, res.intersectionPoint);
         if (!intersected || dist < dIfs)
         {
           dIff = res.intersectionPoint;
@@ -196,7 +196,7 @@ __global__ void processPixel(Sphere* spheres,
     {
       Point const& pointOnSphere = dIff;
       Point const& center = spheres[dIs].center;
-      double radius = spheres[dIs].radius;
+      float radius = spheres[dIs].radius;
       RGB rgb = spheres[dIs].color;
 
       bool isInShadow = false;
@@ -223,7 +223,7 @@ __global__ void processPixel(Sphere* spheres,
                          light.y - pointOnSphere.y,
                          light.z - pointOnSphere.z};
         normalize(unitVec);
-        double dot = dotProduct(normalVector, unitVec);
+        float dot = dotProduct(normalVector, unitVec);
 
         bitmap[idx] = rgb * (max(0.0, diffuseCoefficient * dot) + ambientCoefficient);
       }

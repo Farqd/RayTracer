@@ -32,8 +32,8 @@ public:
 
   RGB bitmap[imageY * 2][imageZ * 2];
 
-  double const diffuseCoefficient = 0.9;
-  double const ambientCoefficient = 0.1;
+  float const diffuseCoefficient = 0.9;
+  float const ambientCoefficient = 0.1;
 
   RGB processPixel(Segment const& ray, int recursionLevel);
   RGB processPixelOnBackground();

@@ -18,9 +18,9 @@ RGB RayTracer::processPixelOnBackground()
 std::pair<int, Point> RayTracer::findClosestSphereIntersection(Segment const& seg)
 {
   bool foundAny = false;
-  Point closestPoint;
+  Point closestPoint{};
   int sphereIndex = -1;
-  double closestDistance = std::numeric_limits<double>::max();
+  float closestDistance = std::numeric_limits<float>::max();
 
   for (size_t i = 0; i < spheres.size(); i++)
   {
@@ -36,7 +36,7 @@ std::pair<int, Point> RayTracer::findClosestSphereIntersection(Segment const& se
       }
       else
       {
-        double dist = distance(seg.a, res.second);
+        float dist = distance(seg.a, res.second);
         if (dist < closestDistance)
         {
           closestDistance = dist;
@@ -52,9 +52,9 @@ std::pair<int, Point> RayTracer::findClosestSphereIntersection(Segment const& se
 std::pair<int, Point> RayTracer::findClosestPlaneIntersection(Segment const& seg)
 {
   bool foundAny = false;
-  Point closestPoint;
+  Point closestPoint{};
   int planeIndex = -1;
-  double closestDistance = std::numeric_limits<double>::max();
+  float closestDistance = std::numeric_limits<float>::max();
 
   for (size_t i = 0; i < planes.size(); i++)
   {
@@ -70,7 +70,7 @@ std::pair<int, Point> RayTracer::findClosestPlaneIntersection(Segment const& seg
       }
       else
       {
-        double dist = distance(seg.a, res.second);
+        float dist = distance(seg.a, res.second);
         if (dist < closestDistance)
         {
           closestDistance = dist;
@@ -91,7 +91,7 @@ RGB RayTracer::processPixelOnSphere(Point const& rayBeg, Point const& pointOnSph
   RGB resultCol;
 
   Point const& center = spheres[sphereIndex].center;
-  double radius = spheres[sphereIndex].radius;
+  float radius = spheres[sphereIndex].radius;
   RGB basicColor = spheres[sphereIndex].color;
 
   bool isInShadow = false;
@@ -126,9 +126,9 @@ RGB RayTracer::processPixelOnSphere(Point const& rayBeg, Point const& pointOnSph
     Point unitVec = {light.x - pointOnSphere.x, light.y - pointOnSphere.y,
                      light.z - pointOnSphere.z};
     normalize(unitVec);
-    double dot = dotProduct(normalVector, unitVec);
+    float dot = dotProduct(normalVector, unitVec);
 
-    resultCol = basicColor * (std::max(0.0, diffuseCoefficient * dot) + ambientCoefficient);
+    resultCol = basicColor * (std::max(0.0f, diffuseCoefficient * dot) + ambientCoefficient);
   }
 
   if (recursionLevel >= maxRecursionLevel
@@ -138,7 +138,7 @@ RGB RayTracer::processPixelOnSphere(Point const& rayBeg, Point const& pointOnSph
   Segment refl = reflection({rayBeg, pointOnSphere}, spheres[sphereIndex]);
   RGB reflectedColor = processPixel(refl, recursionLevel + 1);
 
-  double refC = spheres[sphereIndex].reflectionCoefficient;
+  float refC = spheres[sphereIndex].reflectionCoefficient;
   resultCol = resultCol * (1.0 - refC);
   resultCol.r += reflectedColor.r * refC;
   resultCol.g += reflectedColor.g * refC;
@@ -177,9 +177,9 @@ RGB RayTracer::processPixelOnPlane(Point const& rayBeg, Point const& pointOnPlan
   {
     Point unitVec = {light.x - pointOnPlane.x, light.y - pointOnPlane.y, light.z - pointOnPlane.z};
     normalize(unitVec);
-    double dot = dotProduct(planes[planeIndex].normal, unitVec);
+    float dot = dotProduct(planes[planeIndex].normal, unitVec);
     resultCol =
-        planes[planeIndex].color * (std::max(0.0, diffuseCoefficient * dot) + ambientCoefficient);
+        planes[planeIndex].color * (std::max(0.0f, diffuseCoefficient * dot) + ambientCoefficient);
   }
 
   if (recursionLevel >= maxRecursionLevel
@@ -190,7 +190,7 @@ RGB RayTracer::processPixelOnPlane(Point const& rayBeg, Point const& pointOnPlan
 
   RGB reflectedColor = processPixel(refl, recursionLevel + 1);
 
-  double refC = planes[planeIndex].reflectionCoefficient;
+  float refC = planes[planeIndex].reflectionCoefficient;
   resultCol = resultCol * (1.0 - refC);
   resultCol.r += reflectedColor.r * refC;
   resultCol.g += reflectedColor.g * refC;
@@ -232,8 +232,8 @@ void RayTracer::processPixelsThreads(int threadId)
     {
       RGB const& color =
           processPixel({observer,
-                        {static_cast<double>(imageX), static_cast<double>(y) / antiAliasing,
-                         static_cast<double>(z) / antiAliasing}},
+                        {static_cast<float>(imageX), static_cast<float>(y) / antiAliasing,
+                         static_cast<float>(z) / antiAliasing}},
                        0);
 
       bitmap[y + imageY][z + imageZ] = color;

@@ -6,12 +6,12 @@
 
 #include "common/structures.h"
 
-double vectorlen(Vector const& vec)
+float vectorlen(Vector const& vec)
 {
   return std::sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
 }
 
-double dotProduct(Vector const& a, Vector const& b)
+float dotProduct(Vector const& a, Vector const& b)
 {
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
@@ -36,45 +36,45 @@ bool pointInShadow(Point const& point, Point const& light, Plane const& plane)
 
 void normalize(Vector& vec)
 {
-  double len = vectorlen(vec);
+  float len = vectorlen(vec);
   vec.x = vec.x / len;
   vec.y = vec.y / len;
   vec.z = vec.z / len;
 }
 
-double distance(Point const& a, Point const& b)
+float distance(Point const& a, Point const& b)
 {
   return std::sqrt(std::pow(b.x - a.x, 2) + std::pow(b.y - a.y, 2) + std::pow(b.z - a.z, 2));
 }
 
 std::pair<bool, Point> intersection(Segment segment, Sphere sphere)
 {
-  double x0 = segment.a.x;
-  double y0 = segment.a.y;
-  double z0 = segment.a.z;
+  float x0 = segment.a.x;
+  float y0 = segment.a.y;
+  float z0 = segment.a.z;
 
-  double x1 = segment.b.x;
-  double y1 = segment.b.y;
-  double z1 = segment.b.z;
+  float x1 = segment.b.x;
+  float y1 = segment.b.y;
+  float z1 = segment.b.z;
 
-  double dx = x1 - x0;
-  double dy = y1 - y0;
-  double dz = z1 - z0;
+  float dx = x1 - x0;
+  float dy = y1 - y0;
+  float dz = z1 - z0;
 
-  double cx = sphere.center.x;
-  double cy = sphere.center.y;
-  double cz = sphere.center.z;
+  float cx = sphere.center.x;
+  float cy = sphere.center.y;
+  float cz = sphere.center.z;
 
-  double a = dx * dx + dy * dy + dz * dz;
-  double b = 2 * dx * (x0 - cx) + 2 * dy * (y0 - cy) + 2 * dz * (z0 - cz);
-  double c = cx * cx + cy * cy + cz * cz + x0 * x0 + y0 * y0 + z0 * z0
-             - 2 * (cx * x0 + cy * y0 + cz * z0) - sphere.radius * sphere.radius;
+  float a = dx * dx + dy * dy + dz * dz;
+  float b = 2 * dx * (x0 - cx) + 2 * dy * (y0 - cy) + 2 * dz * (z0 - cz);
+  float c = cx * cx + cy * cy + cz * cz + x0 * x0 + y0 * y0 + z0 * z0
+            - 2 * (cx * x0 + cy * y0 + cz * z0) - sphere.radius * sphere.radius;
 
-  double discriminant = b * b - 4 * a * c;
+  float discriminant = b * b - 4 * a * c;
   if (!isCloseToZero(discriminant) && discriminant < 0)
     return {false, {}};
 
-  double t = (-b - std::sqrt(discriminant)) / (2 * a);
+  float t = (-b - std::sqrt(discriminant)) / (2 * a);
   if (t < 0)
     return {false, {}};
 
@@ -94,7 +94,7 @@ Segment reflection(Segment const& segment, Sphere const& sphere)
   normalize(ri);
   normalize(normalVector);
 
-  double dot = dotProduct(ri, normalVector);
+  float dot = dotProduct(ri, normalVector);
   ri.x = ri.x - 2 * normalVector.x * dot;
   ri.y = ri.y - 2 * normalVector.y * dot;
   ri.z = ri.z - 2 * normalVector.z * dot;
@@ -109,11 +109,11 @@ Segment reflection(Segment const& segment, Sphere const& sphere)
 std::pair<bool, Point> intersection(Segment segment, Plane plane)
 {
   Vector V = {segment.b.x - segment.a.x, segment.b.y - segment.a.y, segment.b.z - segment.a.z};
-  double x = dotProduct(V, plane.normal);
+  float x = dotProduct(V, plane.normal);
   if (x == 0)
     return {false, {}};
 
-  double t = -(dotProduct(segment.a, plane.normal) + plane.d) / x;
+  float t = -(dotProduct(segment.a, plane.normal) + plane.d) / x;
   if (t < 0 || isCloseToZero(t))
     return {false, {}};
 
@@ -133,7 +133,7 @@ Segment reflection(Segment const& segment, Plane const& plane)
 
   Vector ri = {segment.b.x - segment.a.x, segment.b.y - segment.a.y, segment.b.z - segment.a.z};
 
-  double dot = dotProduct(ri, normalVector);
+  float dot = dotProduct(ri, normalVector);
   ri.x = ri.x - 2 * normalVector.x * dot;
   ri.y = ri.y - 2 * normalVector.y * dot;
   ri.z = ri.z - 2 * normalVector.z * dot;

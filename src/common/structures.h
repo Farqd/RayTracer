@@ -16,9 +16,9 @@ struct RGB
 
 struct Point
 {
-  double x;
-  double y;
-  double z;
+  float x;
+  float y;
+  float z;
 };
 
 using Vector = Point;
@@ -26,9 +26,9 @@ using Vector = Point;
 struct Sphere
 {
   Point center;
-  double radius;
+  float radius = 0;
   RGB color;
-  double reflectionCoefficient = 0.0;
+  float reflectionCoefficient = 0;
 };
 
 struct Segment
@@ -42,9 +42,9 @@ struct Plane
 {
   Point P;
   Vector normal;
-  double d;
+  float d = 0;
   RGB color;
-  double reflectionCoefficient = 0.0;
+  float reflectionCoefficient = 0;
 };
 
 #endif // COMMON_STRUCTURES_H

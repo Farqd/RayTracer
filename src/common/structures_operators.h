@@ -9,7 +9,7 @@
 
 #include "common/structures.h"
 
-inline RGB operator*(RGB rgb, double const& times)
+inline RGB operator*(RGB rgb, float times)
 {
   rgb.r *= times;
   rgb.g *= times;

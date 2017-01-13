@@ -1,6 +1,5 @@
 #include <iomanip>
 #include <iostream>
-#include <vector>
 
 #include "common/structures.h"
 #include "cuda/raytracercuda.h"

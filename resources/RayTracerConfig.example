@@ -1,0 +1,11 @@
+aa 2
+maxRecursion 1
+diffuse 0.9
+ambient 0.1
+
+depth 512
+height 384
+width 512
+
+observer 0 0 0
+light 1000 2000 2500

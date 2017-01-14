@@ -5,19 +5,20 @@
 #include "common/Structures.h"
 #include "cuda/RayTracerCuda.h"
 
-int main()
+int main(int argc, char* argv[])
 {
   RayTracerConfig config;
-  config.antiAliasing = 2;
-  config.maxRecursionLevel = 1;
-  config.diffuseCoefficient = 0.9;
-  config.ambientCoefficient = 0.1;
-  config.imageX = 512;
-  config.imageY = 384 * config.antiAliasing;
-  config.imageZ = 512 * config.antiAliasing;
-  config.imageCenter = {static_cast<float>(config.imageX), 0, 0};
-  config.observer = {0, 0, 0};
-  config.light = {1000, 2000, 2500};
+
+  if (argc > 1)
+  {
+    std::cerr << "Reading config from file " << argv[1] << std::endl;
+    config = RayTracerConfig::fromFile(argv[1]);
+  }
+  else
+  {
+    std::cerr << "Using default config" << std::endl;
+  }
+  std::cerr << config;
 
   RayTracerCuda tracer(config);
 

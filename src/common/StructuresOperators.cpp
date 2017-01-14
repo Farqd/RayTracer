@@ -11,7 +11,7 @@ std::ostream& operator<<(std::ostream& outs, RGB rgb)
 
 std::ostream& operator<<(std::ostream& outs, Point const& point)
 {
-  outs << "{ " << point.x << " " << point.y << " " << point.z << "} ";
+  outs << "{" << point.x << " " << point.y << " " << point.z << "} ";
   return outs;
 }
 

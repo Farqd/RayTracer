@@ -6,40 +6,23 @@
 
 #include "common/Structures.h"
 
-float vectorlen(Vector const& vec)
+float vectorLen(Vector const& vec)
 {
   return std::sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
+}
+
+Vector normalize(Vector vec)
+{
+  float len = vectorLen(vec);
+  vec.x = vec.x / len;
+  vec.y = vec.y / len;
+  vec.z = vec.z / len;
+  return vec;
 }
 
 float dotProduct(Vector const& a, Vector const& b)
 {
   return a.x * b.x + a.y * b.y + a.z * b.z;
-}
-
-bool pointInShadow(Point const& point, Point const& light, Sphere const& sphere)
-{
-  Segment seg = {point, light};
-  auto const& res = intersection(seg, sphere);
-  if (res.first && distance(point, res.second) < distance(point, light))
-    return true;
-  return false;
-}
-
-bool pointInShadow(Point const& point, Point const& light, Plane const& plane)
-{
-  Segment seg = {point, light};
-  auto const& res = intersection(seg, plane);
-  if (res.first && distance(point, res.second) < distance(point, light))
-    return true;
-  return false;
-}
-
-void normalize(Vector& vec)
-{
-  float len = vectorlen(vec);
-  vec.x = vec.x / len;
-  vec.y = vec.y / len;
-  vec.z = vec.z / len;
 }
 
 float distance(Point const& a, Point const& b)
@@ -85,14 +68,12 @@ Segment reflection(Segment const& segment, Sphere const& sphere)
 {
   Segment result;
   result.a = segment.b;
-  Point normalVector = {(segment.b.x - sphere.center.x) / sphere.radius,
-                        (segment.b.y - sphere.center.y) / sphere.radius,
-                        (segment.b.z - sphere.center.z) / sphere.radius};
+  Point normalVector = normalize({(segment.b.x - sphere.center.x) / sphere.radius,
+                                  (segment.b.y - sphere.center.y) / sphere.radius,
+                                  (segment.b.z - sphere.center.z) / sphere.radius});
 
-  Vector ri = {segment.b.x - segment.a.x, segment.b.y - segment.a.y, segment.b.z - segment.a.z};
-
-  normalize(ri);
-  normalize(normalVector);
+  Vector ri =
+      normalize({segment.b.x - segment.a.x, segment.b.y - segment.a.y, segment.b.z - segment.a.z});
 
   float dot = dotProduct(ri, normalVector);
   ri.x = ri.x - 2 * normalVector.x * dot;

@@ -24,15 +24,14 @@ private:
   // We assume threadNumber < imageY
   int const threadNumber;
 
+  void processPixelsThreads(int threadId);
   RGB processPixel(Segment const& ray, int recursionLevel);
   RGB processPixelOnBackground();
-  RGB processPixelOnSphere(Point const& rayBeg, Point const& pointOnSphere, size_t sphereIndex,
-                           int recursionLevel);
-  RGB processPixelOnPlane(Point const& rayBeg, Point const& pointOnPlane, size_t planeIndex,
-                          int recursionLevel);
-  std::pair<int, Point> findClosestSphereIntersection(Segment const& seg);
-  std::pair<int, Point> findClosestPlaneIntersection(Segment const& seg);
-  void processPixelsThreads(int threadId);
+  RGB processPixelOnSphere(Point const& rayBeg, Point const& pointOnSphere,
+                           std::vector<Sphere>::const_iterator sphereIt, int recursionLevel);
+  RGB processPixelOnPlane(Point const& rayBeg, Point const& pointOnPlane,
+                          std::vector<Plane>::const_iterator planeIt, int recursionLevel);
+  RGB calculateColorInShadow(RGB currentColor, Vector const& normalVec, Vector const& unitVec);
 };
 
 #endif // COMMON_RAYTRACER_H

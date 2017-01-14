@@ -13,13 +13,16 @@ struct IntersectionResult
   Point intersectionPoint;
   bool intersects;
 };
+
 struct pairip
 {
 	int first;
 	Point second;
 };
+
 extern "C" {
-__device__ RGB processPixel( Segment const& ray,
+
+__device__ RGB processPixel(Segment const& ray,
 														 int recurstionLevel,
 														 Sphere* spheres,
                              int spheresNum,
@@ -30,6 +33,7 @@ __device__ RGB processPixel( Segment const& ray,
                              float ambientCoefficient,
                              Point const& light,
                              RGB const& background);
+
 __device__ bool isCloseToZero(float x)
 {
   return abs(x) < DBL_EPSILON;
@@ -82,8 +86,7 @@ __device__ IntersectionResult intersection(Segment segment, Sphere sphere)
   return {{x0 + t * dx, y0 + t * dy, z0 + t * dz}, true};
 }
 
-
-__device__ float vectorlen(Point const& vec)
+__device__ float vectorLen(Point const& vec)
 {
   return sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
 }
@@ -92,13 +95,15 @@ __device__ float dotProduct(Point const& a, Point const& b)
 {
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
+
 __device__ void normalize(Point& vec)
 {
-  float len = vectorlen(vec);
+  float len = vectorLen(vec);
   vec.x = vec.x / len;
   vec.y = vec.y / len;
   vec.z = vec.z / len;
 }
+
 __device__ IntersectionResult intersectionP(Segment segment, Plane plane)
 {
   Point V = {segment.b.x - segment.a.x, segment.b.y - segment.a.y, segment.b.z - segment.a.z};
@@ -117,6 +122,7 @@ __device__ IntersectionResult intersectionP(Segment segment, Plane plane)
 
   return {result, true};
 }
+
 __device__ Segment reflectionP(Segment const& segment, Plane const& plane)
 {
   Segment result;
@@ -136,6 +142,7 @@ __device__ Segment reflectionP(Segment const& segment, Plane const& plane)
 
   return result;
 }
+
 __device__ Segment reflection(Segment const& segment, Sphere const& sphere)
 {
   Segment result;
@@ -160,6 +167,7 @@ __device__ Segment reflection(Segment const& segment, Sphere const& sphere)
 
   return result;
 }
+
 __device__ bool pointInShadow(Point const& point, Point const& light, Sphere const& sphere)
 {
   Segment seg = {point, light};
@@ -168,6 +176,7 @@ __device__ bool pointInShadow(Point const& point, Point const& light, Sphere con
     return true;
   return false;
 }
+
 __device__ bool pointInShadowP(Point const& point, Point const& light, Plane const& plane)
 {
   Segment seg = {point, light};
@@ -177,38 +186,38 @@ __device__ bool pointInShadowP(Point const& point, Point const& light, Plane con
   return false;
 }
 
-
 __device__ RGB processPixelOnBackground(RGB const& background)
 {
 	return background;
 }
+
 __device__ pairip findClosestSphereIntersection(Segment const& seg, Sphere* spheres, int spheresNum)
 {
   bool foundAny = false;
   Point closestPoint{};
   int sphereIndex = -1;
-  float closestDistance; 
+  float closestDistance;
 
   for (size_t i = 0; i < spheresNum; i++)
   {
     IntersectionResult const& res = intersection(seg, spheres[i]);
-   
-		if (res.intersects)    
+
+		if (res.intersects)
 		{
       if (!foundAny)
       {
         closestDistance = distance(seg.a, res.intersectionPoint);
-        closestPoint = res.intersectionPoint; 
+        closestPoint = res.intersectionPoint;
         sphereIndex = i;
         foundAny = true;
       }
       else
       {
-        float dist = distance(seg.a, res.intersectionPoint); 
+        float dist = distance(seg.a, res.intersectionPoint);
         if (dist < closestDistance)
         {
           closestDistance = dist;
-          closestPoint = res.intersectionPoint; 
+          closestPoint = res.intersectionPoint;
           sphereIndex = i;
         }
       }
@@ -222,24 +231,24 @@ __device__ pairip findClosestPlaneIntersection(Segment const& seg, Plane* planes
   bool foundAny = false;
   Point closestPoint{};
   int planeIndex = -1;
-  float closestDistance; 
+  float closestDistance;
 
   for (size_t i = 0; i < planesNum; i++)
   {
     IntersectionResult const& res = intersectionP(seg, planes[i]);
-    
-		if (res.intersects)    
+
+		if (res.intersects)
 		{
       if (!foundAny)
       {
-        closestDistance = distance(seg.a, res.intersectionPoint); 
-        closestPoint = res.intersectionPoint; 
+        closestDistance = distance(seg.a, res.intersectionPoint);
+        closestPoint = res.intersectionPoint;
         planeIndex = i;
         foundAny = true;
       }
       else
       {
-        float dist = distance(seg.a, res.intersectionPoint); 
+        float dist = distance(seg.a, res.intersectionPoint);
         if (dist < closestDistance)
         {
           closestDistance = dist;
@@ -376,38 +385,26 @@ __device__ RGB processPixel( Segment const& ray,
                              Point const& light,
                              RGB const& background)
 {
-  
-
-  
-
-		
 		pairip sphereIntersection = findClosestSphereIntersection(ray, spheres, spheresNum);
-	 	
 		pairip planeIntersection = findClosestPlaneIntersection(ray, planes, planesNum);
 
 		if (sphereIntersection.first != -1 && planeIntersection.first != -1)
 		{
 		  if (distance(ray.a, sphereIntersection.second) < distance(ray.a, planeIntersection.second))
 				return processPixelOnSphere(ray.a, sphereIntersection.second, sphereIntersection.first, recursionLevel, maxRecursionLevel, spheres, spheresNum, planes, planesNum, ambientCoefficient, diffuseCoefficient, light, background);
-				
 		  else
 		    return processPixelOnPlane(ray.a, planeIntersection.second, planeIntersection.first,
 		                               recursionLevel, maxRecursionLevel, spheres, spheresNum, planes, planesNum, ambientCoefficient, diffuseCoefficient, light, background);
 		}
-		
 
 		if (sphereIntersection.first != -1)
 		  return processPixelOnSphere(ray.a, sphereIntersection.second, sphereIntersection.first, recursionLevel, maxRecursionLevel, spheres, spheresNum, planes, planesNum, ambientCoefficient, diffuseCoefficient, light, background);
-			
 
 		if (planeIntersection.first != -1)
 		  return processPixelOnPlane(ray.a, planeIntersection.second, planeIntersection.first,
 		                             recursionLevel, maxRecursionLevel, spheres, spheresNum, planes, planesNum, ambientCoefficient, diffuseCoefficient, light, background);
-			
 
 		return processPixelOnBackground(background);
-	
-
 }
 __global__ void computePixel(Sphere* spheres,
                              int spheresNum,
@@ -423,11 +420,9 @@ __global__ void computePixel(Sphere* spheres,
                              float lX, float lY, float lZ,
                              uint8_t R, uint8_t G, uint8_t B)
 {
-	
-
   int thidX = (blockIdx.x * blockDim.x) + threadIdx.x;
   int thidY = (blockIdx.y * blockDim.y) + threadIdx.y;
-	
+
 	if (thidX < 2 * imageY && thidY < 2 * imageZ)
   {
 		Point const observer = {observerX, observerY, observerZ};

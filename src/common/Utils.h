@@ -5,18 +5,34 @@
 #include <vector>
 
 #include "common/Structures.h"
+#include "common/StructuresOperators.h"
 
-float vectorlen(Vector const& vec);
+inline float vectorLen(Vector const& vec);
+
+Vector normalize(Vector vec);
 
 float dotProduct(Vector const& a, Vector const& b);
 
-bool pointInShadow(Point const& point, Point const& light, Sphere const& sphere);
-
-bool pointInShadow(Point const& point, Point const& light, Plane const& plane);
-
-void normalize(Vector& vec);
-
 float distance(Point const& a, Point const& b);
+
+template <typename T>
+bool pointInShadow(Point const& point, Point const& light, T const& object)
+{
+  Segment seg = {point, light};
+  auto const& res = intersection(seg, object);
+  return res.first && distance(point, res.second) < distance(point, light);
+}
+
+template <typename Iterator>
+bool pointInShadow(Point const& point, Point const& light, Iterator begin, Iterator end)
+{
+  for (Iterator it = begin; it != end; ++it)
+  {
+    if (pointInShadow(point, light, *it))
+      return true;
+  }
+  return false;
+}
 
 // Returns true if intersection exists
 // If two points of intersection exist closest is returned
@@ -32,6 +48,36 @@ template <typename T>
 bool isCloseToZero(T x)
 {
   return std::abs(x) < std::numeric_limits<T>::epsilon();
+}
+
+template <typename T>
+std::pair<int, Point> findClosestIntersection(std::vector<T> const& objects, Segment const& seg)
+{
+  Point closestPoint{};
+  int sphereIndex = -1;
+  float closestDistance = std::numeric_limits<float>::max();
+
+  for (size_t i = 0; i < objects.size(); i++)
+  {
+    auto const& res = intersection(seg, objects[i]);
+    if (!res.first)
+      continue;
+
+    float dist = distance(seg.a, res.second);
+    if (dist < closestDistance)
+    {
+      closestDistance = dist;
+      closestPoint = res.second;
+      sphereIndex = i;
+    }
+  }
+  return {sphereIndex, closestPoint};
+}
+
+inline RGB calculateColorFromReflection(RGB currentColor, RGB reflectedColor,
+                                        float reflectionCoefficient)
+{
+  return currentColor * (1.0f - reflectionCoefficient) + reflectedColor * reflectionCoefficient;
 }
 
 #endif // COMMON_UTILS_H

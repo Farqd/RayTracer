@@ -1,16 +1,26 @@
 #include <iomanip>
 #include <iostream>
 
+#include "common/raytracerconfig.h"
 #include "common/structures.h"
 #include "cuda/raytracercuda.h"
 
 int main()
 {
-  std::cout << std::fixed;
-  std::cout << std::setprecision(3);
+  RayTracerConfig config;
+  config.antiAliasing = 2;
+  config.maxRecursionLevel = 1;
+  config.diffuseCoefficient = 0.9;
+  config.ambientCoefficient = 0.1;
+  config.imageX = 512;
+  config.imageY = 384 * config.antiAliasing;
+  config.imageZ = 512 * config.antiAliasing;
+  config.imageCenter = {static_cast<float>(config.imageX), 0, 0};
+  config.observer = {0, 0, 0};
+  config.light = {1000, 2000, 2500};
 
-  RayTracerCuda tracer;
-  
+  RayTracerCuda tracer(config);
+
 
   // red
   tracer.spheres.push_back({{2500, -200, -600}, 600, {200, 0, 0}, 0.3});
@@ -40,5 +50,5 @@ int main()
   tracer.planes.push_back({{0, 0, 3500}, {0, 0, -1}, 3500, {32, 178, 170}, 0.05});
 
   tracer.processPixelsCuda();
-  tracer.printBitmap();
+  tracer.printBitmap(std::cout);
 }

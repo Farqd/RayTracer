@@ -1,4 +1,4 @@
-#include "common/raytracer.h"
+#include "raytracer.h"
 
 #include <algorithm>
 #include <iomanip>
@@ -98,7 +98,7 @@ RGB RayTracer::processPixelOnSphere(Point const& rayBeg, Point const& pointOnSph
 
   for (size_t i = 0; i < spheres.size(); i++)
   {
-    if (i != sphereIndex && pointInShadow(pointOnSphere, light, spheres[i]))
+    if (i != sphereIndex && pointInShadow(pointOnSphere, config.light, spheres[i]))
     {
       isInShadow = true;
       break;
@@ -107,7 +107,7 @@ RGB RayTracer::processPixelOnSphere(Point const& rayBeg, Point const& pointOnSph
 
   for (size_t i = 0; i < planes.size(); i++)
   {
-    if (pointInShadow(pointOnSphere, light, planes[i]))
+    if (pointInShadow(pointOnSphere, config.light, planes[i]))
     {
       isInShadow = true;
       break;
@@ -116,22 +116,23 @@ RGB RayTracer::processPixelOnSphere(Point const& rayBeg, Point const& pointOnSph
 
   if (isInShadow)
   {
-    resultCol = basicColor * ambientCoefficient;
+    resultCol = basicColor * config.ambientCoefficient;
   }
   else
   {
     Point normalVector = {(pointOnSphere.x - center.x) / radius,
                           (pointOnSphere.y - center.y) / radius,
                           (pointOnSphere.z - center.z) / radius};
-    Point unitVec = {light.x - pointOnSphere.x, light.y - pointOnSphere.y,
-                     light.z - pointOnSphere.z};
+    Point unitVec = {config.light.x - pointOnSphere.x, config.light.y - pointOnSphere.y,
+                     config.light.z - pointOnSphere.z};
     normalize(unitVec);
     float dot = dotProduct(normalVector, unitVec);
 
-    resultCol = basicColor * (std::max(0.0f, diffuseCoefficient * dot) + ambientCoefficient);
+    resultCol =
+        basicColor * (std::max(0.0f, config.diffuseCoefficient * dot) + config.ambientCoefficient);
   }
 
-  if (recursionLevel >= maxRecursionLevel
+  if (recursionLevel >= config.maxRecursionLevel
       || isCloseToZero(spheres[sphereIndex].reflectionCoefficient))
     return resultCol;
 
@@ -155,7 +156,7 @@ RGB RayTracer::processPixelOnPlane(Point const& rayBeg, Point const& pointOnPlan
 
   for (size_t i = 0; i < spheres.size(); i++)
   {
-    if (pointInShadow(pointOnPlane, light, spheres[i]))
+    if (pointInShadow(pointOnPlane, config.light, spheres[i]))
     {
       isInShadow = true;
       break;
@@ -164,7 +165,7 @@ RGB RayTracer::processPixelOnPlane(Point const& rayBeg, Point const& pointOnPlan
 
   for (size_t i = 0; i < planes.size(); i++)
   {
-    if (i != planeIndex && pointInShadow(pointOnPlane, light, planes[i]))
+    if (i != planeIndex && pointInShadow(pointOnPlane, config.light, planes[i]))
     {
       isInShadow = true;
       break;
@@ -172,17 +173,18 @@ RGB RayTracer::processPixelOnPlane(Point const& rayBeg, Point const& pointOnPlan
   }
 
   if (isInShadow)
-    resultCol = planes[planeIndex].color * ambientCoefficient;
+    resultCol = planes[planeIndex].color * config.ambientCoefficient;
   else
   {
-    Point unitVec = {light.x - pointOnPlane.x, light.y - pointOnPlane.y, light.z - pointOnPlane.z};
+    Point unitVec = {config.light.x - pointOnPlane.x, config.light.y - pointOnPlane.y,
+                     config.light.z - pointOnPlane.z};
     normalize(unitVec);
     float dot = dotProduct(planes[planeIndex].normal, unitVec);
-    resultCol =
-        planes[planeIndex].color * (std::max(0.0f, diffuseCoefficient * dot) + ambientCoefficient);
+    resultCol = planes[planeIndex].color
+                * (std::max(0.0f, config.diffuseCoefficient * dot) + config.ambientCoefficient);
   }
 
-  if (recursionLevel >= maxRecursionLevel
+  if (recursionLevel >= config.maxRecursionLevel
       || isCloseToZero(planes[planeIndex].reflectionCoefficient))
     return resultCol;
 
@@ -227,16 +229,16 @@ RGB RayTracer::processPixel(Segment const& ray, int recursionLevel)
 
 void RayTracer::processPixelsThreads(int threadId)
 {
-  for (int y = -imageY + threadId; y < imageY; y += threadNumber)
-    for (int z = -imageZ; z < imageZ; ++z)
+  for (int y = -config.imageY + threadId; y < config.imageY; y += threadNumber)
+    for (int z = -config.imageZ; z < config.imageZ; ++z)
     {
-      RGB const& color =
-          processPixel({observer,
-                        {static_cast<float>(imageX), static_cast<float>(y) / antiAliasing,
-                         static_cast<float>(z) / antiAliasing}},
-                       0);
+      RGB const& color = processPixel(
+          {config.observer,
+           {static_cast<float>(config.imageX), static_cast<float>(y) / config.antiAliasing,
+            static_cast<float>(z) / config.antiAliasing}},
+          0);
 
-      bitmap[y + imageY][z + imageZ] = color;
+      bitmap(y + config.imageY, z + config.imageZ) = color;
     }
 }
 
@@ -250,37 +252,4 @@ void RayTracer::processPixels()
 
   for (int i = 0; i < threadNumber - 1; i++)
     thVec[i].join();
-}
-
-void RayTracer::printBitmap()
-{
-  // see https://en.wikipedia.org/wiki/Netpbm_format for format details
-
-  std::cout << "P3" << std::endl;
-  std::cout << imageZ * 2 / antiAliasing << " " << imageY * 2 / antiAliasing << std::endl
-            << 255 << std::endl;
-  for (int i = imageY * 2 - 1; i >= 0; i -= antiAliasing)
-  {
-    for (int j = 0; j < imageZ * 2; j += antiAliasing)
-    {
-      int r = 0;
-      int g = 0;
-      int b = 0;
-
-      for (int ii = 0; ii < antiAliasing; ii++)
-        for (int jj = 0; jj < antiAliasing; jj++)
-        {
-          r += bitmap[i - ii][j + jj].r;
-          g += bitmap[i - ii][j + jj].g;
-          b += bitmap[i - ii][j + jj].b;
-        }
-
-      RGB color = {0, 0, 0};
-      color.r = r / (antiAliasing * antiAliasing);
-      color.g = g / (antiAliasing * antiAliasing);
-      color.b = b / (antiAliasing * antiAliasing);
-      std::cout << color << " ";
-    }
-    std::cout << std::endl;
-  }
 }

@@ -1,15 +1,25 @@
 #include <iomanip>
 #include <iostream>
 
-#include "common/raytracer.h"
+#include "common/raytracerconfig.h"
 #include "common/structures.h"
+#include "raytracer.h"
 
 int main()
 {
-  std::cout << std::fixed;
-  std::cout << std::setprecision(3);
+  RayTracerConfig config;
+  config.antiAliasing = 2;
+  config.maxRecursionLevel = 1;
+  config.diffuseCoefficient = 0.9;
+  config.ambientCoefficient = 0.1;
+  config.imageX = 512;
+  config.imageY = 384 * config.antiAliasing;
+  config.imageZ = 512 * config.antiAliasing;
+  config.imageCenter = {static_cast<float>(config.imageX), 0, 0};
+  config.observer = {0, 0, 0};
+  config.light = {1000, 2000, 2500};
 
-  RayTracer tracer;
+  RayTracer tracer(config);
 
   // red
   tracer.spheres.push_back({{2500, -200, -600}, 600, {200, 0, 0}, 0.3});
@@ -40,5 +50,5 @@ int main()
 
 
   tracer.processPixels();
-  tracer.printBitmap();
+  tracer.printBitmap(std::cout);
 }

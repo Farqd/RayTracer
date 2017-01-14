@@ -40,19 +40,25 @@ set(DEBUG_CXX_FLAGS -ggdb)
 set(COMMON_SOURCE_FILES
     src/common/structures_operators.cpp
     src/common/utils.cpp
-    src/common/raytracer.cpp)
+    src/common/RayTracerBase.cpp)
 set(COMMON_HEADER_FILES
     src/common/structures.h
     src/common/structures_operators.h
-    src/common/raytracer.h
-    src/common/utils.h)
+    src/common/RayTracerBase.h
+    src/common/utils.h
+    src/common/imagedata.h
+    src/common/raytracerconfig.h
+    src/common/DynamicArray2D.h
+    src/common/RayTracerBase.h)
 
 # CPU executable
 
 set(SOURCE_FILES
     src/main.cpp
+    src/raytracer.cpp
     ${COMMON_SOURCE_FILES})
 set(HEADER_FILES
+    src/raytracer.h
     ${COMMON_HEADER_FILES})
 
 add_executable(RayTracer ${SOURCE_FILES} ${HEADER_FILES})

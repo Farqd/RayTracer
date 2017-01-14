@@ -1,14 +1,22 @@
 #ifndef COMMON_RAYTRACERCUDA_H
 #define COMMON_RAYTRACERCUDA_H
 
-#include "common/raytracer.h"
+#include <vector>
 
-class RayTracerCuda : public RayTracer
+#include "common/RayTracerBase.h"
+#include "common/raytracerconfig.h"
+
+struct RayTracerCuda : public RayTracerBase
 {
-  RGB background = {100, 100, 200};
+  RayTracerCuda(RayTracerConfig const& config)
+    : RayTracerBase(config)
+  {
+  }
 
-public:
   void processPixelsCuda();
+
+private:
+  RGB const background = {100, 100, 200};
 };
 
 

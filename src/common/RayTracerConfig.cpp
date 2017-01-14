@@ -88,8 +88,6 @@ RayTracerConfig RayTracerConfig::fromFile(std::string const& path)
       std::getline(file, token);
     else if (token == "aa")
       file >> config.antiAliasing;
-    else if (token == "diffuse")
-      file >> config.diffuseCoefficient;
     else if (token == "ambient")
       file >> config.ambientCoefficient;
     else if (token == "maxRecursion")
@@ -120,7 +118,6 @@ std::ostream& operator<<(std::ostream& out, RayTracerConfig const& config)
 {
   out << "antiAliasing: " << config.antiAliasing
       << "\nmaxRecursionLevel: " << config.maxRecursionLevel
-      << "\ndiffuseCoefficient: " << config.diffuseCoefficient
       << "\nambientCoefficient: " << config.ambientCoefficient << "\nimageX: " << config.imageX
       << "\nimageY: " << config.imageY << "\nimageZ: " << config.imageZ
       << "\nobserver: " << config.observer << "\nlight: " << config.light;
@@ -139,7 +136,6 @@ RayTracerConfig RayTracerConfig::defaultConfig()
 
   config.antiAliasing = 2;
   config.maxRecursionLevel = 1;
-  config.diffuseCoefficient = 0.9;
   config.ambientCoefficient = 0.1;
   config.imageX = 512;
   config.imageY = 384 * config.antiAliasing;

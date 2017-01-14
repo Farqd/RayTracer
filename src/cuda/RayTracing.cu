@@ -29,7 +29,6 @@ __device__ RGB processPixel(Segment const& ray,
                             Plane* planes,
                             int planesNum,
                             int maxRecursionLevel,
-                            float diffuseCoefficient,
                             float ambientCoefficient,
                             Point const& light,
                             RGB const& background);
@@ -263,7 +262,7 @@ __device__ RGB calculateColorFromReflection(RGB currentColor, RGB reflectedColor
 __device__ RGB processPixelOnSphere(Point const& rayBeg, Point const& pointOnSphere,
                                     size_t sphereIndex, int recursionLevel, int maxRecursionLevel,
                                     Sphere* spheres, int spheresNum, Plane* planes, int planesNum,
-                                    float ambientCoefficient, float diffuseCoefficient,
+                                    float ambientCoefficient,
                                     Point const& light, RGB const& background)
 {
   bool isInShadow = false;
@@ -313,7 +312,7 @@ __device__ RGB processPixelOnSphere(Point const& rayBeg, Point const& pointOnSph
     normalize(unitVec);
     float dot = dotProduct(normalVector, unitVec);
 
-    resultCol = basicColor * (max(0.0f, diffuseCoefficient * dot) + ambientCoefficient);
+    resultCol = basicColor * (max(0.0f, (1 - ambientCoefficient) * dot) + ambientCoefficient);
   }
 
   if (recursionLevel >= maxRecursionLevel
@@ -322,7 +321,7 @@ __device__ RGB processPixelOnSphere(Point const& rayBeg, Point const& pointOnSph
 
   Segment refl = reflection({rayBeg, pointOnSphere}, spheres[sphereIndex]);
   RGB reflectedColor = processPixel(refl, recursionLevel + 1, spheres, spheresNum, planes,
-                                    planesNum, maxRecursionLevel, diffuseCoefficient,
+                                    planesNum, maxRecursionLevel,
                                     ambientCoefficient, light, background);
 
   return calculateColorFromReflection(resultCol, reflectedColor,
@@ -332,7 +331,7 @@ __device__ RGB processPixelOnSphere(Point const& rayBeg, Point const& pointOnSph
 __device__ RGB processPixelOnPlane(Point const& rayBeg, Point const& pointOnPlane,
                                    size_t planeIndex, int recursionLevel, int maxRecursionLevel,
                                    Sphere* spheres, int spheresNum, Plane* planes, int planesNum,
-                                   float ambientCoefficient, float diffuseCoefficient,
+                                   float ambientCoefficient,
                                    Point const& light, RGB const& background)
 {
   bool isInShadow = false;
@@ -373,7 +372,7 @@ __device__ RGB processPixelOnPlane(Point const& rayBeg, Point const& pointOnPlan
     normalize(unitVec);
     float dot = dotProduct(planes[planeIndex].normal, unitVec);
     resultCol =
-        planes[planeIndex].color * (max(0.0f, diffuseCoefficient * dot) + ambientCoefficient);
+        planes[planeIndex].color * (max(0.0f, (1 - ambientCoefficient) * dot) + ambientCoefficient);
   }
 
   if (recursionLevel >= maxRecursionLevel
@@ -383,7 +382,7 @@ __device__ RGB processPixelOnPlane(Point const& rayBeg, Point const& pointOnPlan
   Segment refl = reflectionP({rayBeg, pointOnPlane}, planes[planeIndex]);
 
   RGB reflectedColor = processPixel(refl, recursionLevel + 1, spheres, spheresNum, planes,
-                                    planesNum, maxRecursionLevel, diffuseCoefficient,
+                                    planesNum, maxRecursionLevel,
                                     ambientCoefficient, light, background);
 
   return calculateColorFromReflection(resultCol, reflectedColor,
@@ -396,7 +395,6 @@ __device__ RGB processPixel(Segment const& ray,
                             Plane* planes,
                             int planesNum,
                             int maxRecursionLevel,
-                            float diffuseCoefficient,
                             float ambientCoefficient,
                             Point const& light,
                             RGB const& background)
@@ -409,25 +407,25 @@ __device__ RGB processPixel(Segment const& ray,
     if (distance(ray.a, sphereIntersection.second) < distance(ray.a, planeIntersection.second))
       return processPixelOnSphere(ray.a, sphereIntersection.second, sphereIntersection.first,
                                   recursionLevel, maxRecursionLevel, spheres, spheresNum, planes,
-                                  planesNum, ambientCoefficient, diffuseCoefficient, light,
+                                  planesNum, ambientCoefficient, light,
                                   background);
     else
       return processPixelOnPlane(ray.a, planeIntersection.second, planeIntersection.first,
                                  recursionLevel, maxRecursionLevel, spheres, spheresNum, planes,
-                                 planesNum, ambientCoefficient, diffuseCoefficient, light,
+                                 planesNum, ambientCoefficient, light,
                                  background);
   }
 
   if (sphereIntersection.first != -1)
     return processPixelOnSphere(ray.a, sphereIntersection.second, sphereIntersection.first,
                                 recursionLevel, maxRecursionLevel, spheres, spheresNum, planes,
-                                planesNum, ambientCoefficient, diffuseCoefficient, light,
+                                planesNum, ambientCoefficient, light,
                                 background);
 
   if (planeIntersection.first != -1)
     return processPixelOnPlane(ray.a, planeIntersection.second, planeIntersection.first,
                                recursionLevel, maxRecursionLevel, spheres, spheresNum, planes,
-                               planesNum, ambientCoefficient, diffuseCoefficient, light,
+                               planesNum, ambientCoefficient, light,
                                background);
 
   return processPixelOnBackground(background);
@@ -440,7 +438,6 @@ __global__ void computePixel(Sphere* spheres,
                              int imageX, int imageY, int imageZ,
                              int antiAliasing,
                              int maxRecursionLevel,
-                             float diffuseCoefficient,
                              float ambientCoefficient,
                              float observerX, float observerY, float observerZ,
                              float lX, float lY, float lZ,
@@ -461,7 +458,7 @@ __global__ void computePixel(Sphere* spheres,
     Segment ray{observer, point};
     int idx = thidX * imageZ * 2 + thidY;
     bitmap[idx] = processPixel(ray, 0, spheres, spheresNum, planes, planesNum, maxRecursionLevel,
-                               diffuseCoefficient, ambientCoefficient, light, background);
+                               ambientCoefficient, light, background);
   }
 }
 }

@@ -9,7 +9,6 @@ struct RayTracerConfig
 {
   int antiAliasing = 2;
   int maxRecursionLevel = 1;
-  float diffuseCoefficient = 0.9;
   float ambientCoefficient = 0.1;
 
   int imageX;

@@ -71,7 +71,7 @@ RGB RayTracer::calculateColorInLight(RGB currentColor, Vector const& normalVec,
 {
   float dot = dotProduct(normalVec, normalize(lightVec));
   return currentColor
-         * (std::max(0.0f, config.diffuseCoefficient * dot) + config.ambientCoefficient);
+         * (std::max(0.0f, (1 - config.ambientCoefficient) * dot) + config.ambientCoefficient);
 }
 
 RGB RayTracer::processPixel(Segment const& ray, int recursionLevel)

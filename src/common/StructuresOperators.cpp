@@ -11,7 +11,7 @@ std::ostream& operator<<(std::ostream& outs, RGB rgb)
 
 std::ostream& operator<<(std::ostream& outs, Point const& point)
 {
-  outs << "{" << point.x << " " << point.y << " " << point.z << "} ";
+  outs << "{" << point.x << " " << point.y << " " << point.z << "}";
   return outs;
 }
 
@@ -24,5 +24,11 @@ std::ostream& operator<<(std::ostream& outs, Segment const& segment)
 std::ostream& operator<<(std::ostream& outs, Sphere const& sphere)
 {
   outs << "Center: " << sphere.center << " R: " << sphere.radius;
+  return outs;
+}
+
+std::ostream& operator<<(std::ostream& outs, Plane const& plane)
+{
+  outs << plane.P << " * " << plane.normal << " + " << plane.d << " = 0, Color: " << plane.color;
   return outs;
 }

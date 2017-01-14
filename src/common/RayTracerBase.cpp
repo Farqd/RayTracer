@@ -10,12 +10,10 @@ void RayTracerBase::printBitmap(std::ostream& out)
   out << std::fixed << std::setprecision(3);
 
   out << "P3" << std::endl;
-  out << config.imageZ * 2 / config.antiAliasing << " " << config.imageY * 2 / config.antiAliasing
-      << std::endl
-      << 255 << std::endl;
-  for (int i = config.imageY * 2 - 1; i >= 0; i -= config.antiAliasing)
+  out << config.imageZ << " " << config.imageY << std::endl << 255 << std::endl;
+  for (int i = config.imageY * config.antiAliasing - 1; i >= 0; i -= config.antiAliasing)
   {
-    for (int j = 0; j < config.imageZ * 2; j += config.antiAliasing)
+    for (int j = 0; j < config.imageZ * config.antiAliasing; j += config.antiAliasing)
     {
       int r = 0;
       int g = 0;

@@ -43,8 +43,8 @@ void RayTracerCuda::processPixelsCuda()
   CU_CHECK(cuMemAlloc(&bitmapDev, sizeof(RGB) * bitmap.size()));
   CU_CHECK(cuMemcpyHtoD(bitmapDev, bitmapTab, sizeof(RGB) * bitmap.size()));
 
-  int planesNum = planes.size();
-  Plane* planesTab = planes.data();
+  int planesNum = config.planes.size();
+  Plane* planesTab = const_cast<Plane*>(config.planes.data());
   CUdeviceptr planesDev;
   if (planesNum != 0)
   {
@@ -53,8 +53,8 @@ void RayTracerCuda::processPixelsCuda()
     CU_CHECK(cuMemcpyHtoD(planesDev, planesTab, sizeof(Plane) * (planesNum)));
   }
 
-  int spheresNum = spheres.size();
-  Sphere* spheresTab = spheres.data();
+  int spheresNum = config.spheres.size();
+  Sphere* spheresTab = const_cast<Sphere*>(config.spheres.data());
   CUdeviceptr spheresDev;
   if (spheresNum != 0)
   {
@@ -64,8 +64,8 @@ void RayTracerCuda::processPixelsCuda()
   }
 
   int iX = config.imageX;
-  int iY = config.imageY;
-  int iZ = config.imageZ;
+  int iY = config.imageY / 2;
+  int iZ = config.imageZ / 2;
   int aA = config.antiAliasing;
   int mRL = config.maxRecursionLevel;
   float dC = config.diffuseCoefficient;
@@ -84,8 +84,8 @@ void RayTracerCuda::processPixelsCuda()
                   &iZ,         &aA,         &mRL,       &dC,        &aC,        &oX, &oY,
                   &oZ,         &lX,         &lY,        &lZ,        &R,         &G,  &B};
   int threadsNum = 16;
-  int blocks_per_grid_x = (2 * config.imageY + threadsNum - 1) / threadsNum;
-  int blocks_per_grid_y = (2 * config.imageZ + threadsNum - 1) / threadsNum;
+  int blocks_per_grid_x = (config.imageY + threadsNum - 1) / threadsNum;
+  int blocks_per_grid_y = (config.imageZ + threadsNum - 1) / threadsNum;
   int threads_per_block_x = threadsNum;
   int threads_per_block_y = threadsNum;
 

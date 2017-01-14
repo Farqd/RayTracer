@@ -39,4 +39,6 @@ std::ostream& operator<<(std::ostream& outs, Segment const& segment);
 
 std::ostream& operator<<(std::ostream& outs, Sphere const& sphere);
 
+std::ostream& operator<<(std::ostream& outs, Plane const& plane);
+
 #endif // COMMON_STRUCTURES_OPERATORS_H

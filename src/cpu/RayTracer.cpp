@@ -21,9 +21,9 @@ RGB RayTracer::processPixelOnSphere(Point const& rayBeg, Point const& pointOnSph
                                     int recursionLevel)
 {
   bool const isInShadow =
-      pointInShadow(pointOnSphere, config.light, spheres.cbegin(), sphereIt)
-      || pointInShadow(pointOnSphere, config.light, sphereIt + 1, spheres.cend())
-      || pointInShadow(pointOnSphere, config.light, planes.cbegin(), planes.cend());
+      pointInShadow(pointOnSphere, config.light, config.spheres.cbegin(), sphereIt)
+      || pointInShadow(pointOnSphere, config.light, sphereIt + 1, config.spheres.cend())
+      || pointInShadow(pointOnSphere, config.light, config.planes.cbegin(), config.planes.cend());
 
   RGB resultCol;
 
@@ -56,9 +56,9 @@ RGB RayTracer::processPixelOnPlane(Point const& rayBeg, Point const& pointOnPlan
                                    std::vector<Plane>::const_iterator planeIt, int recursionLevel)
 {
   bool const isInShadow =
-      pointInShadow(pointOnPlane, config.light, planes.cbegin(), planeIt)
-      || pointInShadow(pointOnPlane, config.light, planeIt + 1, planes.cend())
-      || pointInShadow(pointOnPlane, config.light, spheres.cbegin(), spheres.cend());
+      pointInShadow(pointOnPlane, config.light, config.planes.cbegin(), planeIt)
+      || pointInShadow(pointOnPlane, config.light, planeIt + 1, config.planes.cend())
+      || pointInShadow(pointOnPlane, config.light, config.spheres.cbegin(), config.spheres.cend());
 
   RGB resultCol;
   if (isInShadow)
@@ -90,8 +90,8 @@ RGB RayTracer::calculateColorInShadow(RGB currentColor, Vector const& normalVec,
 
 RGB RayTracer::processPixel(Segment const& ray, int recursionLevel)
 {
-  std::pair<int, Point> sphereIntersection = findClosestIntersection(spheres, ray);
-  std::pair<int, Point> planeIntersection = findClosestIntersection(planes, ray);
+  std::pair<int, Point> sphereIntersection = findClosestIntersection(config.spheres, ray);
+  std::pair<int, Point> planeIntersection = findClosestIntersection(config.planes, ray);
 
   if (sphereIntersection.first == -1 && planeIntersection.first == -1)
     return processPixelOnBackground();
@@ -105,16 +105,18 @@ RGB RayTracer::processPixel(Segment const& ray, int recursionLevel)
 
   if (closerIntersectionCmp(sphereIntersection, planeIntersection))
     return processPixelOnSphere(ray.a, sphereIntersection.second,
-                                spheres.cbegin() + sphereIntersection.first, recursionLevel);
+                                config.spheres.cbegin() + sphereIntersection.first, recursionLevel);
   else
     return processPixelOnPlane(ray.a, planeIntersection.second,
-                               planes.cbegin() + planeIntersection.first, recursionLevel);
+                               config.planes.cbegin() + planeIntersection.first, recursionLevel);
 }
 
 void RayTracer::processPixelsThreads(int threadId)
 {
-  for (int y = -config.imageY + threadId; y < config.imageY; y += threadNumber)
-    for (int z = -config.imageZ; z < config.imageZ; ++z)
+  int const shiftY = bitmap.rows / 2;
+  int const shiftZ = bitmap.cols / 2;
+  for (int y = -shiftY + threadId; y < shiftY; y += threadNumber)
+    for (int z = -shiftZ; z < shiftZ; ++z)
     {
       RGB const& color = processPixel(
           {config.observer,
@@ -122,7 +124,7 @@ void RayTracer::processPixelsThreads(int threadId)
             static_cast<float>(z) / config.antiAliasing}},
           0);
 
-      bitmap(y + config.imageY, z + config.imageZ) = color;
+      bitmap(y + shiftY, z + shiftZ) = color;
     }
 }
 

@@ -12,14 +12,12 @@ struct RayTracerBase
 {
   RayTracerBase(RayTracerConfig const& config)
     : config(config)
-    , bitmap(2 * config.imageY, 2 * config.imageZ)
+    , bitmap(config.imageY * config.antiAliasing, config.imageZ * config.antiAliasing)
   {
   }
 
   RayTracerConfig const config;
   DynamicArray2D<RGB> bitmap;
-  std::vector<Sphere> spheres;
-  std::vector<Plane> planes;
 
   void printBitmap(std::ostream& out);
 };

@@ -39,7 +39,8 @@ set(DEBUG_CXX_FLAGS -ggdb)
 
 set(COMMON_SOURCE_FILES
     src/common/StructuresOperators.cpp
-    src/common/RayTracerBase.cpp)
+    src/common/RayTracerBase.cpp
+    src/common/RayTracerConfig.cpp)
 set(COMMON_HEADER_FILES
     src/common/Structures.h
     src/common/StructuresOperators.h

@@ -46,7 +46,6 @@ set(COMMON_HEADER_FILES
     src/common/StructuresOperators.h
     src/common/RayTracerBase.h
     src/common/Utils.h
-    src/common/imagedata.h
     src/common/RayTracerConfig.h
     src/common/DynamicArray2D.h
     src/common/RayTracerBase.h)

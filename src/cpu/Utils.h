@@ -7,9 +7,9 @@
 #include "common/Structures.h"
 #include "common/StructuresOperators.h"
 
-inline float vectorLen(Vector const& vec);
+float vectorLen(Vector const& vec);
 
-Vector normalize(Vector vec);
+Vector normalize(Vector const& vec);
 
 float dotProduct(Vector const& a, Vector const& b);
 
@@ -36,9 +36,9 @@ bool pointInShadow(Point const& point, Point const& light, Iterator begin, Itera
 
 // Returns true if intersection exists
 // If two points of intersection exist closest is returned
-std::pair<bool, Point> intersection(Segment segment, Sphere sphere);
+std::pair<bool, Point> intersection(Segment const& segment, Sphere const& sphere);
 
-std::pair<bool, Point> intersection(Segment segment, Plane plane);
+std::pair<bool, Point> intersection(Segment const& segment, Plane const& plane);
 
 Segment reflection(Segment const& segment, Sphere const& sphere);
 

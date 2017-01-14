@@ -5,6 +5,58 @@
 
 #include "common/Structures.h"
 
+inline Point& operator/=(Point& p, float value)
+{
+  p.x /= value;
+  p.y /= value;
+  p.z /= value;
+  return p;
+}
+
+inline Point operator/(Point p, float value)
+{
+  return p /= value;
+}
+
+inline Point& operator*=(Point& p, float value)
+{
+  p.x *= value;
+  p.y *= value;
+  p.z *= value;
+  return p;
+}
+
+inline Point operator*(Point p, float value)
+{
+  return p *= value;
+}
+
+inline Point& operator-=(Point& a, Point const& b)
+{
+  a.x -= b.x;
+  a.y -= b.y;
+  a.z -= b.z;
+  return a;
+}
+
+inline Point operator-(Point a, Point const& b)
+{
+  return a -= b;
+}
+
+inline Point& operator+=(Point& a, Point const& b)
+{
+  a.y += b.y;
+  a.z += b.z;
+  a.x += b.x;
+  return a;
+}
+
+inline Point operator+(Point a, Point const& b)
+{
+  return a += b;
+}
+
 inline RGB& operator*=(RGB& rgb, float times)
 {
   rgb.r *= times;

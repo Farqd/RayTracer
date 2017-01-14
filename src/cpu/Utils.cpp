@@ -11,13 +11,9 @@ float vectorLen(Vector const& vec)
   return std::sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
 }
 
-Vector normalize(Vector vec)
+Vector normalize(Vector const& vec)
 {
-  float len = vectorLen(vec);
-  vec.x = vec.x / len;
-  vec.y = vec.y / len;
-  vec.z = vec.z / len;
-  return vec;
+  return vec / vectorLen(vec);
 }
 
 float dotProduct(Vector const& a, Vector const& b)
@@ -27,10 +23,10 @@ float dotProduct(Vector const& a, Vector const& b)
 
 float distance(Point const& a, Point const& b)
 {
-  return std::sqrt(std::pow(b.x - a.x, 2) + std::pow(b.y - a.y, 2) + std::pow(b.z - a.z, 2));
+  return std::sqrt(vectorLen(b - a));
 }
 
-std::pair<bool, Point> intersection(Segment segment, Sphere sphere)
+std::pair<bool, Point> intersection(Segment const& segment, Sphere const& sphere)
 {
   float x0 = segment.a.x;
   float y0 = segment.a.y;
@@ -66,30 +62,18 @@ std::pair<bool, Point> intersection(Segment segment, Sphere sphere)
 
 Segment reflection(Segment const& segment, Sphere const& sphere)
 {
-  Segment result;
-  result.a = segment.b;
-  Point normalVector = normalize({(segment.b.x - sphere.center.x) / sphere.radius,
-                                  (segment.b.y - sphere.center.y) / sphere.radius,
-                                  (segment.b.z - sphere.center.z) / sphere.radius});
+  Point normalVector = normalize((segment.b - sphere.center) / sphere.radius);
 
-  Vector ri =
-      normalize({segment.b.x - segment.a.x, segment.b.y - segment.a.y, segment.b.z - segment.a.z});
-
+  Vector ri = normalize(segment.b - segment.a);
   float dot = dotProduct(ri, normalVector);
-  ri.x = ri.x - 2 * normalVector.x * dot;
-  ri.y = ri.y - 2 * normalVector.y * dot;
-  ri.z = ri.z - 2 * normalVector.z * dot;
+  ri -= normalVector * (2 * dot);
 
-  result.b.x = result.a.x + ri.x;
-  result.b.y = result.a.y + ri.y;
-  result.b.z = result.a.z + ri.z;
-
-  return result;
+  return {segment.b, segment.b + ri};
 }
 
-std::pair<bool, Point> intersection(Segment segment, Plane plane)
+std::pair<bool, Point> intersection(Segment const& segment, Plane const& plane)
 {
-  Vector V = {segment.b.x - segment.a.x, segment.b.y - segment.a.y, segment.b.z - segment.a.z};
+  Vector V = segment.b - segment.a;
   float x = dotProduct(V, plane.normal);
   if (x == 0)
     return {false, {}};
@@ -98,30 +82,12 @@ std::pair<bool, Point> intersection(Segment segment, Plane plane)
   if (t < 0 || isCloseToZero(t))
     return {false, {}};
 
-  Point result;
-  result.x = segment.a.x + t * V.x;
-  result.y = segment.a.y + t * V.y;
-  result.z = segment.a.z + t * V.z;
-
-  return {true, result};
+  return {true, segment.a + V * t};
 }
 
 Segment reflection(Segment const& segment, Plane const& plane)
 {
-  Segment result;
-  result.a = segment.b;
-  Point normalVector = plane.normal;
-
-  Vector ri = {segment.b.x - segment.a.x, segment.b.y - segment.a.y, segment.b.z - segment.a.z};
-
-  float dot = dotProduct(ri, normalVector);
-  ri.x = ri.x - 2 * normalVector.x * dot;
-  ri.y = ri.y - 2 * normalVector.y * dot;
-  ri.z = ri.z - 2 * normalVector.z * dot;
-
-  result.b.x = result.a.x + ri.x;
-  result.b.y = result.a.y + ri.y;
-  result.b.z = result.a.z + ri.z;
-
-  return result;
+  Vector ri = segment.b - segment.a;
+  ri -= plane.normal * (2 * dotProduct(ri, plane.normal));
+  return {segment.b, segment.b + ri};
 }

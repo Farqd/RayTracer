@@ -7,11 +7,11 @@
 #include "common/Structures.h"
 #include "common/StructuresOperators.h"
 
+float dotProduct(Vector const& a, Vector const& b);
+
 float vectorLen(Vector const& vec);
 
 Vector normalize(Vector const& vec);
-
-float dotProduct(Vector const& a, Vector const& b);
 
 float distance(Point const& a, Point const& b);
 

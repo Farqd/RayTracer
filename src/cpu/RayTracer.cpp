@@ -26,21 +26,12 @@ RGB RayTracer::processPixelOnSphere(Point const& rayBeg, Point const& pointOnSph
       || pointInShadow(pointOnSphere, config.light, config.planes.cbegin(), config.planes.cend());
 
   RGB resultCol;
-
   if (isInShadow)
-  {
     resultCol = sphereIt->color * config.ambientCoefficient;
-  }
   else
   {
-    Point const& center = sphereIt->center;
-    float radius = sphereIt->radius;
-    Point normalVector = {(pointOnSphere.x - center.x) / radius,
-                          (pointOnSphere.y - center.y) / radius,
-                          (pointOnSphere.z - center.z) / radius};
-    Point unitVec = {config.light.x - pointOnSphere.x, config.light.y - pointOnSphere.y,
-                     config.light.z - pointOnSphere.z};
-    resultCol = calculateColorInShadow(sphereIt->color, normalVector, unitVec);
+    Vector const normalVec = (pointOnSphere - sphereIt->center) / sphereIt->radius;
+    resultCol = calculateColorInLight(sphereIt->color, normalVec, config.light - pointOnSphere);
   }
 
   if (recursionLevel >= config.maxRecursionLevel || isCloseToZero(sphereIt->reflectionCoefficient))
@@ -64,28 +55,23 @@ RGB RayTracer::processPixelOnPlane(Point const& rayBeg, Point const& pointOnPlan
   if (isInShadow)
     resultCol = planeIt->color * config.ambientCoefficient;
   else
-  {
-    Point unitVec = {config.light.x - pointOnPlane.x, config.light.y - pointOnPlane.y,
-                     config.light.z - pointOnPlane.z};
-    resultCol = calculateColorInShadow(planeIt->color, planeIt->normal, unitVec);
-  }
+    resultCol = calculateColorInLight(planeIt->color, planeIt->normal, config.light - pointOnPlane);
 
   if (recursionLevel >= config.maxRecursionLevel || isCloseToZero(planeIt->reflectionCoefficient))
     return resultCol;
 
   Segment refl = reflection({rayBeg, pointOnPlane}, *planeIt);
-
   RGB reflectedColor = processPixel(refl, recursionLevel + 1);
 
   return calculateColorFromReflection(resultCol, reflectedColor, planeIt->reflectionCoefficient);
 }
 
-RGB RayTracer::calculateColorInShadow(RGB currentColor, Vector const& normalVec,
-                                      Vector const& unitVec)
+RGB RayTracer::calculateColorInLight(RGB currentColor, Vector const& normalVec,
+                                     Vector const& lightVec)
 {
-  float shadow = dotProduct(normalVec, normalize(unitVec));
+  float dot = dotProduct(normalVec, normalize(lightVec));
   return currentColor
-         * (std::max(0.0f, config.diffuseCoefficient * shadow) + config.ambientCoefficient);
+         * (std::max(0.0f, config.diffuseCoefficient * dot) + config.ambientCoefficient);
 }
 
 RGB RayTracer::processPixel(Segment const& ray, int recursionLevel)

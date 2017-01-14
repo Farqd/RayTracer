@@ -6,9 +6,14 @@
 
 #include "common/Structures.h"
 
+float dotProduct(Vector const& a, Vector const& b)
+{
+  return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
 float vectorLen(Vector const& vec)
 {
-  return std::sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
+  return std::sqrt(dotProduct(vec, vec));
 }
 
 Vector normalize(Vector const& vec)
@@ -16,14 +21,9 @@ Vector normalize(Vector const& vec)
   return vec / vectorLen(vec);
 }
 
-float dotProduct(Vector const& a, Vector const& b)
-{
-  return a.x * b.x + a.y * b.y + a.z * b.z;
-}
-
 float distance(Point const& a, Point const& b)
 {
-  return std::sqrt(vectorLen(b - a));
+  return vectorLen(b - a);
 }
 
 std::pair<bool, Point> intersection(Segment const& segment, Sphere const& sphere)

@@ -31,7 +31,7 @@ private:
                            std::vector<Sphere>::const_iterator sphereIt, int recursionLevel);
   RGB processPixelOnPlane(Point const& rayBeg, Point const& pointOnPlane,
                           std::vector<Plane>::const_iterator planeIt, int recursionLevel);
-  RGB calculateColorInShadow(RGB currentColor, Vector const& normalVec, Vector const& unitVec);
+  RGB calculateColorInLight(RGB currentColor, Vector const& normalVec, Vector const& lightVec);
 };
 
 #endif // COMMON_RAYTRACER_H

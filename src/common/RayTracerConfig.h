@@ -1,7 +1,7 @@
 #ifndef COMMON_RAYTRACERCONFIG_H
 #define COMMON_RAYTRACERCONFIG_H
 
-#include "common/structures.h"
+#include "common/Structures.h"
 
 struct RayTracerConfig
 {

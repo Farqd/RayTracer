@@ -1,4 +1,4 @@
-#include "cuda/raytracercuda.h"
+#include "cuda/RayTracerCuda.h"
 
 #include <cuda.h>
 #include <cuda_runtime_api.h>

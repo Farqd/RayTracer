@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "common/structures.h"
+#include "common/Structures.h"
 
 float vectorlen(Vector const& vec);
 

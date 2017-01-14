@@ -1,4 +1,4 @@
-#include "raytracer.h"
+#include "RayTracer.h"
 
 #include <algorithm>
 #include <iomanip>
@@ -7,8 +7,8 @@
 #include <thread>
 #include <vector>
 
-#include "common/structures_operators.h"
-#include "common/utils.h"
+#include "common/StructuresOperators.h"
+#include "common/Utils.h"
 
 RGB RayTracer::processPixelOnBackground()
 {

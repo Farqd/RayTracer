@@ -1,6 +1,6 @@
 #include "common/RayTracerBase.h"
 
-#include "common/structures_operators.h"
+#include "common/StructuresOperators.h"
 #include <iomanip>
 
 void RayTracerBase::printBitmap(std::ostream& out)

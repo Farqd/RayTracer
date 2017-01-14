@@ -6,8 +6,8 @@
 
 #include "common/DynamicArray2D.h"
 #include "common/RayTracerBase.h"
-#include "common/raytracerconfig.h"
-#include "common/structures.h"
+#include "common/RayTracerConfig.h"
+#include "common/Structures.h"
 
 struct RayTracer : public RayTracerBase
 {

@@ -1,9 +1,9 @@
 #include <iomanip>
 #include <iostream>
 
-#include "common/raytracerconfig.h"
-#include "common/structures.h"
-#include "cuda/raytracercuda.h"
+#include "common/RayTracerConfig.h"
+#include "common/Structures.h"
+#include "cuda/RayTracerCuda.h"
 
 int main()
 {

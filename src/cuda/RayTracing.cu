@@ -6,7 +6,7 @@
 #include <device_launch_parameters.h>
 #include <math_functions.h>
 
-#include "common/structures.h"
+#include "common/Structures.h"
 
 struct IntersectionResult
 {

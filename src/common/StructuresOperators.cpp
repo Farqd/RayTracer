@@ -1,4 +1,4 @@
-#include "common/structures_operators.h"
+#include "common/StructuresOperators.h"
 
 #include <cmath>
 #include <limits>

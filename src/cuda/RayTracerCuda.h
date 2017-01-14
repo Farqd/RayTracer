@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "common/RayTracerBase.h"
-#include "common/raytracerconfig.h"
+#include "common/RayTracerConfig.h"
 
 struct RayTracerCuda : public RayTracerBase
 {

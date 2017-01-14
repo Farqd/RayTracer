@@ -1,10 +1,10 @@
-#include "common/utils.h"
+#include "common/Utils.h"
 
 #include <algorithm>
 #include <cmath>
 #include <vector>
 
-#include "common/structures.h"
+#include "common/Structures.h"
 
 float vectorlen(Vector const& vec)
 {

@@ -38,16 +38,16 @@ set(RELEASE_CXX_FLAGS -Werror -O2)
 set(DEBUG_CXX_FLAGS -ggdb)
 
 set(COMMON_SOURCE_FILES
-    src/common/structures_operators.cpp
-    src/common/utils.cpp
+    src/common/StructuresOperators.cpp
+    src/common/Utils.cpp
     src/common/RayTracerBase.cpp)
 set(COMMON_HEADER_FILES
-    src/common/structures.h
-    src/common/structures_operators.h
+    src/common/Structures.h
+    src/common/StructuresOperators.h
     src/common/RayTracerBase.h
-    src/common/utils.h
+    src/common/Utils.h
     src/common/imagedata.h
-    src/common/raytracerconfig.h
+    src/common/RayTracerConfig.h
     src/common/DynamicArray2D.h
     src/common/RayTracerBase.h)
 
@@ -55,10 +55,10 @@ set(COMMON_HEADER_FILES
 
 set(SOURCE_FILES
     src/main.cpp
-    src/raytracer.cpp
+    src/RayTracer.cpp
     ${COMMON_SOURCE_FILES})
 set(HEADER_FILES
-    src/raytracer.h
+    src/RayTracer.h
     ${COMMON_HEADER_FILES})
 
 add_executable(RayTracer ${SOURCE_FILES} ${HEADER_FILES})
@@ -72,11 +72,11 @@ target_link_libraries(RayTracer Threads::Threads)
 if (CUDA_FOUND)
   set(CUDA_SOURCE_FILES
       src/cuda/main.cpp
-      src/cuda/raytracercuda.cpp
+      src/cuda/RayTracerCuda.cpp
       ${COMMON_SOURCE_FILES})
 
   set(CUDA_HEADER_FILES
-      src/cuda/raytracercuda.h
+      src/cuda/RayTracerCuda.h
       ${COMMON_HEADER_FILES})
 
   set(CUDA_NVCC_FLAGS
@@ -87,7 +87,7 @@ if (CUDA_FOUND)
       -Wno-deprecated-gpu-targets)
 
   set(CUDA_CU_FILES
-      src/cuda/raytracing.cu)
+      src/cuda/RayTracing.cu)
 
   set(CUDA_PTX_FILES
       ${CMAKE_BINARY_DIR}/raytracing.ptx)

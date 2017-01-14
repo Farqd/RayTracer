@@ -7,7 +7,7 @@
 #include <limits>
 #include <utility>
 
-#include "common/structures.h"
+#include "common/Structures.h"
 
 inline RGB operator*(RGB rgb, float times)
 {

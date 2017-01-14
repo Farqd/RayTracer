@@ -1,0 +1,124 @@
+aa 2
+maxRecursion 3
+diffuse 0.7
+ambient 0.3
+
+depth 512
+height 1024
+width 1024
+
+observer 0 0 0 # xyz
+light 3000 2500 0
+
+# red
+sphere
+center 2500 -200 -600
+radius 600
+color 200 0 0 # RGB
+reflection 0.2
+endSphere
+
+# green
+sphere
+center 2000 0 800
+radius 400
+color 0 200 0
+reflection 0.1
+endSphere
+
+# blue
+sphere
+center 1000 0 1000
+radius 300
+color 0 0 200
+reflection 0.9
+endSphere
+
+sphere
+center 4000 1000 1000
+radius 800
+color 0 0 200
+reflection 0.07
+endSphere
+
+sphere
+center 3500 500 -500
+radius 800
+color 150 100 50
+reflection 0.2
+endSphere
+
+sphere
+center 1500 0 0
+radius 100
+color 50 200 100
+reflection 0.6
+endSphere
+
+sphere
+center 1800 250 300
+radius 100
+color 50 200 100
+reflection 0.6
+endSphere
+
+sphere
+center 2100 500 600
+radius 100
+color 50 200 100
+reflection 0.6
+endSphere
+
+# front
+plane
+point 6000 0 0
+normalVector -1 0 0
+coef 6000
+color 178 170 30
+reflection 0.05
+endPlane
+
+# back
+# plane
+# point -200 0 0
+# normalVector 1 0 0
+# coef 2000
+# color 245 222 179
+# reflection 0
+# endPlane
+
+# top
+plane
+point 0 3000 0
+normalVector 0 -1 0
+coef 3000
+color 200 200 200
+reflection 0
+endPlane
+
+# bottom
+plane
+point 0 -800 0
+normalVector 0 1 0
+coef 800
+color 50 50 50
+reflection 0.1
+endPlane
+
+# left
+plane
+point 0 0 -2500
+normalVector 0 0 1
+coef 2500
+color 245 222 179
+reflection 0.05
+endPlane
+
+# right
+plane
+point 0 0 3500
+normalVector 0 0 -1
+coef 3500
+color 245 222 179
+reflection 0.05
+endPlane

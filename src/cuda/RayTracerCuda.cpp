@@ -64,8 +64,8 @@ void RayTracerCuda::processPixelsCuda()
   }
 
   int iX = config.imageX;
-  int iY = config.imageY / 2;
-  int iZ = config.imageZ / 2;
+  int iY = bitmap.rows / 2;
+  int iZ = bitmap.cols / 2;
   int aA = config.antiAliasing;
   int mRL = config.maxRecursionLevel;
   float aC = config.ambientCoefficient;
@@ -83,8 +83,8 @@ void RayTracerCuda::processPixelsCuda()
                   &iZ,         &aA,         &mRL,       &aC,        &oX,        &oY, &oZ,
                   &lX,         &lY,         &lZ,        &R,         &G,         &B};
   int threadsNum = 16;
-  int blocks_per_grid_x = (config.imageY + threadsNum - 1) / threadsNum;
-  int blocks_per_grid_y = (config.imageZ + threadsNum - 1) / threadsNum;
+  int blocks_per_grid_x = (bitmap.rows + threadsNum - 1) / threadsNum;
+  int blocks_per_grid_y = (bitmap.cols + threadsNum - 1) / threadsNum;
   int threads_per_block_x = threadsNum;
   int threads_per_block_y = threadsNum;
 

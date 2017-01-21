@@ -8,13 +8,17 @@
 
 struct FindResult
 {
-  bool exists;
+  bool exists = false;
   Triangle triangle;
   Point point;
 };
 
 class KdNode
 {
+private:
+  FindResult findInTriangles(Segment seg);
+  FindResult findRecursive(Segment seg);
+
 public:
   BoundingBox bb;
   KdNode* left = nullptr;

@@ -43,6 +43,13 @@ void RayTracerCuda::processPixelsCuda()
   CU_CHECK(cuMemAlloc(&bitmapDev, sizeof(RGB) * bitmap.size()));
   CU_CHECK(cuMemcpyHtoD(bitmapDev, bitmapTab, sizeof(RGB) * bitmap.size()));
 
+  cudaError code = cudaDeviceSetLimit (cudaLimitStackSize, 2048*2);
+  if(code != cudaSuccess)
+  {
+    std::cerr << "Setting stack limit failed " << code << " " <<std::endl;
+    exit(code);
+  }
+
   int planesNum = config.planes.size();
   Plane* planesTab = const_cast<Plane*>(config.planes.data());
   CUdeviceptr planesDev;

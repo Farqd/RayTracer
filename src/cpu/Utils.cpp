@@ -11,6 +11,15 @@ float dotProduct(Vector const& a, Vector const& b)
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
+Vector crossProduct(Vector const& a, Vector const& b)
+{
+	Vector vec;
+	vec.x = a.y * b.z - b.y * a.z;
+	vec.y = a.z * b.x - a.x * b.z;
+	vec.z = a.x * b.y - a.y * b.x;
+	return vec;
+}
+
 float vectorLen(Vector const& vec)
 {
   return std::sqrt(dotProduct(vec, vec));

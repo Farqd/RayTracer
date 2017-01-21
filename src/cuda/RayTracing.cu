@@ -112,6 +112,14 @@ __device__ float dotProduct(Point const& a, Point const& b)
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
+__device__ Vector crossProduct(Vector const& a, Vector const& b)
+{
+	Vector vec;
+	vec.x = a.y * b.z - b.y * a.z;
+	vec.y = a.z * b.x - a.x * b.z;
+	vec.z = a.x * b.y - a.y * b.x;
+	return vec;
+}
 __device__ void normalize(Point& vec)
 {
   float len = vectorLen(vec);

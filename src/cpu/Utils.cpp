@@ -107,17 +107,106 @@ Segment reflection(Segment const& segment, Triangle const& triangle)
   return {};
 }
 
-// TODO
-
 std::pair<bool, Point> intersection(Segment const& segment, Triangle const& triangle)
 {
-  return {};
+
+    float t;
+		float u;
+		float v; 
+ 
+		Point orig = segment.a;
+		Point dir = segment.b;
+		Point v0 = triangle.x;
+		Point v1 = triangle.y;
+		Point v2 = triangle.z;
+
+    
+    Vector v0v1 = v1 - v0; 
+    Vector v0v2 = v2 - v0; 
+    
+    Vector N = crossProduct(v0v1, v0v2); 
+    float denom = dotProduct(N, N); 
+ 
+   
+    float NdotRayDirection = dotProduct(N, dir); 
+    if (isCloseToZero(NdotRayDirection))  
+        return {false, {}}; 
+ 
+    
+    float d = dotProduct(N, v0); 
+ 
+    
+    t = (dotProduct(N, orig) + d) / NdotRayDirection; 
+    
+    if (t < 0) return {false, {}};
+ 
+   
+    Point P = orig + dir * t; 
+ 
+    
+    Vector C;
+ 
+   
+    Vector edge0 = v1 - v0; 
+    Vector vp0 = P - v0; 
+    C = crossProduct(edge0, vp0); 
+    if (dotProduct(N, C) < 0) return {false, {}}; 
+ 
+   
+    Vector edge1 = v2 - v1; 
+    Vector vp1 = P - v1; 
+    C = crossProduct(edge1, vp1); 
+    if ((u = dotProduct(N, C)) < 0)  return {false, {}}; 
+ 
+    
+    Vector edge2 = v0 - v2; 
+    Vector vp2 = P - v2; 
+    C = crossProduct(edge2, vp2); 
+    if ((v = dotProduct(N, C)) < 0) return {false, {}}; 
+ 
+    u /= denom; 
+    v /= denom; 
+ 
+    return {true, P};
+
 }
 
 // We assume point is on triangle
 RGB colorOfPoint(Point const& point, Triangle const& triangle)
 {
-  return {};
+
+		float u;
+		float v; 
+ 
+		Point v0 = triangle.x;
+		Point v1 = triangle.y;
+		Point v2 = triangle.z;
+
+    
+    Vector v0v1 = v1 - v0; 
+    Vector v0v2 = v2 - v0; 
+    
+    Vector N = crossProduct(v0v1, v0v2); 
+    float denom = dotProduct(N, N); 
+   
+    Vector C;
+   
+    Vector edge1 = v2 - v1; 
+    Vector vp1 = point - v1; 
+    C = crossProduct(edge1, vp1); 
+    u = dotProduct(N, C);
+ 
+    
+    Vector edge2 = v0 - v2; 
+    Vector vp2 = point - v2; 
+    C = crossProduct(edge2, vp2); 
+    v = dotProduct(N, C); 
+ 
+    u /= denom; 
+    v /= denom; 
+ 
+    return triangle.colorX * u + triangle.colorY * v + triangle.colorZ * (1 - u - v);
+  
 }
 
 bool intersection(Segment const& segment, BoundingBox const& box)

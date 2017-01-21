@@ -103,8 +103,21 @@ Segment reflection(Segment const& segment, Plane const& plane)
 
 Segment reflection(Segment const& segment, Triangle const& triangle)
 {
-  // TODO
-  return {};
+  Vector ri = segment.b - segment.a;
+	Point v0 = triangle.x;
+	Point v1 = triangle.y;
+	Point v2 = triangle.z;
+
+    
+  Vector v0v1 = v1 - v0; 
+  Vector v0v2 = v2 - v0; 
+    
+  Vector N = crossProduct(v0v1, v0v2); 
+  float denom = dotProduct(N, N);
+	N/=denom;
+
+ 	ri -= N * (2 * dotProduct(ri, N));
+  return {segment.b, segment.b + ri};
 }
 
 std::pair<bool, Point> intersection(Segment const& segment, Triangle const& triangle)
@@ -209,8 +222,52 @@ RGB colorOfPoint(Point const& point, Triangle const& triangle)
   return triangle.colorX * u + triangle.colorY * v + triangle.colorZ * (1 - u - v);
 }
 
+bool intersectionWithRectangle(Segment const& segment, Point const& p0, Point const& p1, Point const& p2, Point const& p3)
+{
+	Triangle triangle = {p0, p1, p2, {}, {}, {}};
+	if (intersection(segment, triangle).first) return true;
+	triangle.y = p3;
+	if (intersection(segment, triangle).first) return true;
+	return false;
+}
+
 bool intersection(Segment const& segment, BoundingBox const& box)
 {
-  // TODO
+	Point const& vMin = box.vMin;
+	Point const& vMax = box.vMax;
+
+	Point p0 = vMin;
+	Point p1 = {vMin.x, vMin.y, vMax.z};
+	Point p2 = {vMin.x, vMax.y, vMax.z};
+	Point p3 = {vMin.x, vMax.y, vMin.z};
+	if (intersectionWithRectangle(segment, p0, p1, p2, p3)) return true;
+	//p0 = vMin;
+	//p1 = {vMin.x, vMin.y, vMax.z};
+	p2 = {vMax.x, vMin.y, vMax.z};
+	p3 = {vMax.x, vMin.y, vMin.z};
+	if (intersectionWithRectangle(segment, p0, p1, p2, p3)) return true;
+	//p0 = vMin;
+	p1 = {vMin.x, vMax.y, vMin.z};
+	p2 = {vMax.x, vMax.y, vMin.z};
+	//p3 = {vMax.x, vMin.y, vMin.z};
+	if (intersectionWithRectangle(segment, p0, p1, p2, p3)) return true;
+
+	p0 = vMax;
+	p1 = {vMax.x, vMax.y, vMin.z};
+	p2 = {vMax.x, vMin.y, vMin.z};
+	p3 = {vMax.x, vMin.y, vMax.z};
+	if (intersectionWithRectangle(segment, p0, p1, p2, p3)) return true;
+
+	//p0 = vMax;
+	//p1 = {vMax.x, vMax.y, vMin.z};
+	p2 = {vMin.x, vMax.y, vMin.z};
+	p3 = {vMin.x, vMax.y, vMax.z};
+	if (intersectionWithRectangle(segment, p0, p1, p2, p3)) return true;
+	//p0 = vMax;
+	p1 = {vMax.x, vMin.y, vMax.z};
+	p2 = {vMin.x, vMin.y, vMax.z};
+	//p3 = {vMin.x, vMax.y, vMax.z};
+	if (intersectionWithRectangle(segment, p0, p1, p2, p3)) return true;
+
   return false;
 }

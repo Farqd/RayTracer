@@ -101,6 +101,11 @@ Segment reflection(Segment const& segment, Plane const& plane)
   return {segment.b, segment.b + ri};
 }
 
+Segment reflection(Segment const& segment, Triangle const& triangle)
+{
+  // TODO
+  return {};
+}
 
 // TODO
 

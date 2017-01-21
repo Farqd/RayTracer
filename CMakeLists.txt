@@ -55,11 +55,13 @@ set(SOURCE_FILES
     src/cpu/RayTracer.cpp
     src/cpu/Utils.cpp
     src/cpuTriangles/KdNode.cpp
+    src/cpuTriangles/RayTracerTriangles.cpp
     ${COMMON_SOURCE_FILES})
 set(HEADER_FILES
     src/cpu/RayTracer.h
     src/cpu/Utils.h
     src/cpuTriangles/KdNode.h
+    src/cpuTriangles/RayTracerTriangles.h
     ${COMMON_HEADER_FILES})
 
 add_executable(RayTracer ${SOURCE_FILES} ${HEADER_FILES})

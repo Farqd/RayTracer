@@ -46,6 +46,9 @@ Segment reflection(Segment const& segment, Sphere const& sphere);
 
 Segment reflection(Segment const& segment, Plane const& plane);
 
+Segment reflection(Segment const& segment, Triangle const& triangle);
+
+
 template <typename T>
 bool isCloseToZero(T x)
 {

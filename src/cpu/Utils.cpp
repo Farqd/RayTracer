@@ -91,3 +91,22 @@ Segment reflection(Segment const& segment, Plane const& plane)
   ri -= plane.normal * (2 * dotProduct(ri, plane.normal));
   return {segment.b, segment.b + ri};
 }
+
+
+// TODO
+
+std::pair<bool, Point> intersection(Segment const& segment, Triangle const& triangle)
+{
+  return {};
+}
+
+// We assume point is on triangle
+RGB colorOfPoint(Point const& point, Triangle const& triangle)
+{
+  return {};
+}
+
+bool intersection(Segment const& segment, BoundingBox const& box)
+{
+  return false;
+}

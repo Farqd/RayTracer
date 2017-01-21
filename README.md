@@ -55,6 +55,6 @@ If no file is specified, default config is used (same as in the example config).
 All source files should comply with `.clang-format` configuration.
 Run `clang-format` on each file before commit or add git hook to run it automatically:
 ```sh
-cp -i resources/pre_commit .git/hooks/
+cp -i resources/pre-commit .git/hooks/
 ```
 and follow displayed instructions.

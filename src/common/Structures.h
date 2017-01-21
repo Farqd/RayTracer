@@ -47,4 +47,19 @@ struct Plane
   float reflectionCoefficient = 0;
 };
 
+struct Triangle
+{
+  Point x;
+  Point y;
+  Point z;
+  RGB colorX;
+  RGB colorY;
+  RGB colorZ;
+};
+
+struct BoundingBox
+{
+  Point vMin;
+  Point vMax;
+};
 #endif // COMMON_STRUCTURES_H

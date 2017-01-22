@@ -61,7 +61,6 @@ set(HEADER_FILES
     ${COMMON_HEADER_FILES})
 
 add_executable(RayTracer ${SOURCE_FILES} ${HEADER_FILES})
-
 target_compile_options(RayTracer PUBLIC "$<$<CONFIG:Release>:${RELEASE_CXX_FLAGS}>")
 target_compile_options(RayTracer PUBLIC "$<$<CONFIG:Debug>:${DEBUG_CXX_FLAGS}>")
 
@@ -87,8 +86,6 @@ target_compile_options(RayTracerTriangles PUBLIC "$<$<CONFIG:Release>:${RELEASE_
 target_compile_options(RayTracerTriangles PUBLIC "$<$<CONFIG:Debug>:${DEBUG_CXX_FLAGS}>")
 
 target_link_libraries(RayTracerTriangles Threads::Threads)
-
-
 
 # CUDA executable
 if (CUDA_FOUND)

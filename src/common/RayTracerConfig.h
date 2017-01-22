@@ -19,8 +19,10 @@ struct RayTracerConfig
 
   std::vector<Sphere> spheres;
   std::vector<Plane> planes;
+  std::vector<Triangle> triangles;
 
   static RayTracerConfig fromFile(std::string const& path);
+  static RayTracerConfig fromPlyFile(std::string const& path);
   static RayTracerConfig defaultConfig();
 
   friend std::ostream& operator<<(std::ostream& out, RayTracerConfig const& config);

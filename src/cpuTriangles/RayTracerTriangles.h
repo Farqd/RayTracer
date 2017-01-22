@@ -12,12 +12,12 @@
 class RayTracerTriangles : public RayTracerBase
 {
 public:
-  RayTracerTriangles(RayTracerConfig const& config, std::vector<Triangle>& triangles)
+  RayTracerTriangles(RayTracerConfig const& config)
     : RayTracerBase(config)
     , threadNumber(std::thread::hardware_concurrency())
   {
     std::cerr << threadNumber << " threads available\n";
-    kdTree = KdNode::build(triangles);
+    kdTree = KdNode::build(config.triangles);
   }
 
   void processPixels();

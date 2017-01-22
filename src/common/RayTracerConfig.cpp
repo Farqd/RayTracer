@@ -164,3 +164,90 @@ RayTracerConfig RayTracerConfig::defaultConfig()
 
   return config;
 }
+
+RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
+{
+  std::ifstream file(path);
+  if (!file.is_open())
+    throw std::invalid_argument("Unable to open file: " + path);
+
+  RayTracerConfig config;
+  std::string token;
+  file >> token;
+  if (token != "ply")
+    throw std::invalid_argument("Not a .ply file: " + path);
+  file >> token;
+  if (token != "format")
+    throw std::invalid_argument("Missing 'format' specifier.");
+  std::getline(file, token);
+
+  int vertexCount = 0;
+  int faceCount = 0;
+
+  std::vector<Vector> vertices;
+
+  while (file >> token)
+  {
+    if (token == "comment")
+      std::getline(file, token);
+    if (token == "element")
+    {
+      file >> token;
+      file >> vertexCount;
+      if (token == "vertex")
+      {
+        // assume format x y z, ignore other
+        file >> token;
+        while (token == "property")
+        {
+          std::getline(file, token);
+          file >> token;
+        }
+      }
+      file >> token;
+      file >> faceCount;
+      if (token == "face")
+      {
+        // assume property list uchar int vertex_indices
+        file >> token;
+        while (token == "property")
+        {
+          std::getline(file, token);
+          file >> token;
+        }
+      }
+      else
+        throw std::invalid_argument("Unknown element '" + token
+                                    + "', only 'vertex' and 'face' are supported");
+    }
+    if (token == "end_header")
+    {
+      for (int i = 0; i < vertexCount; ++i)
+      {
+        Vector v;
+        file >> v.x >> v.y >> v.z;
+        vertices.push_back(v);
+      }
+      for (int i = 0; i < faceCount; ++i)
+      {
+        Triangle face;
+        int count;
+        file >> count;
+        if (count != 3) // only triangles supported
+        {
+          std::cerr << "Warning: only triangles are supported" << std::endl;
+          std::getline(file, token);
+          continue;
+        }
+        int v1, v2, v3;
+        file >> v1 >> v2 >> v3;
+        config.triangles.emplace_back(Triangle{vertices[v1], vertices[v2], vertices[v3]});
+      }
+    }
+    // else
+    //  throw std::invalid_argument("Unknown token '" + token + "'");
+    if (!file.good())
+      throw std::invalid_argument("Invalid config file format.");
+  }
+  return config;
+}

@@ -120,6 +120,49 @@ Segment reflection(Segment const& segment, Triangle const& triangle)
   return {segment.b, segment.b + ri};
 }
 
+bool intersects(Segment const& segment, Triangle const& triangle)
+{
+	Vector const& V1 = triangle.x;
+	Vector const& V2 = triangle.y;
+	Vector const& V3 = triangle.z;
+	
+	Vector const& O = segment.a;
+	Vector const& D = segment.b;
+
+  Vector e1, e2;  
+  Vector P, Q, T;
+  float det, inv_det, u, v;
+  float t;
+
+  e1 = V2 - V1;
+  e2 = V3 - V1;
+
+  P = crossProduct(D, e2);
+  
+  det = dotProduct(e1, P);
+
+  if(isCloseToZero(det)) return false;
+  inv_det = 1.f / det;
+  T = O - V1;
+  u = dotProduct(T, P) * inv_det;
+  if(u < 0.f || u > 1.f) return false;
+
+  Q = crossProduct(T, e1);
+
+  v = dotProduct(D, Q) * inv_det;
+ 
+  if(v < 0.f || u + v  > 1.f) return false;
+
+  t = dotProduct(e2, Q) * inv_det;
+
+  if(t > 0 && !isCloseToZero(t)) {
+    return true;
+  }
+
+  
+  return false;
+}
+
 std::pair<bool, Point> intersection(Segment const& segment, Triangle const& triangle)
 {
   float t;
@@ -225,9 +268,9 @@ RGB colorOfPoint(Point const& point, Triangle const& triangle)
 bool intersectionWithRectangle(Segment const& segment, Point const& p0, Point const& p1, Point const& p2, Point const& p3)
 {
 	Triangle triangle = {p0, p1, p2, {}, {}, {}};
-	if (intersection(segment, triangle).first) return true;
+	if (intersects(segment, triangle)) return true;
 	triangle.y = p3;
-	if (intersection(segment, triangle).first) return true;
+	if (intersects(segment, triangle)) return true;
 	return false;
 }
 

@@ -118,7 +118,7 @@ Segment reflection(Segment const& segment, Triangle const& triangle)
   ri -= N * (2 * dotProduct(ri, N));
   return {segment.b, segment.b + ri};
 }
-
+/*
 std::pair<bool, Point> intersection(Segment const& segment, Triangle const& triangle)
 {
   Vector const& V1 = triangle.x;
@@ -126,7 +126,7 @@ std::pair<bool, Point> intersection(Segment const& segment, Triangle const& tria
   Vector const& V3 = triangle.z;
 
   Vector const& O = segment.a;
-  Vector const& D = segment.b;
+  Vector const& D = normalize(segment.b-segment.a);
 
   Vector e1, e2;
   Vector P, Q, T;
@@ -157,14 +157,14 @@ std::pair<bool, Point> intersection(Segment const& segment, Triangle const& tria
 
   t = dotProduct(e2, Q) * inv_det;
 
-  if (t > 0 && !isCloseToZero(t))
+  if (t > 0)// && !isCloseToZero(t))
   {
-    Point res = V1;
-    e2 *= u;
-    res += e2;
-
-    e1 *= v;
-    res += e1;
+    Point res = segment.a + D*t;
+    //e2 *= u;
+    //res += e2;
+	
+    //e1 *= v;
+    //res += e1;
 
     return {true, res};
   }
@@ -174,72 +174,70 @@ std::pair<bool, Point> intersection(Segment const& segment, Triangle const& tria
   return {false, {}};
 }
 
+*/
+ std::pair<bool, Point> intersection(Segment const& segment, Triangle const& triangle)
+ {
+   float t;
+   float u;
+   float v;
 
-// std::pair<bool, Point> intersection(Segment const& segment, Triangle const& triangle)
-// {
-//   float t;
-//   float u;
-//   float v;
-
-//   Point orig = segment.a;
-//   Point dir = segment.b;
-//   Point v0 = triangle.x;
-//   Point v1 = triangle.y;
-//   Point v2 = triangle.z;
-
-
-//   Vector v0v1 = v1 - v0;
-//   Vector v0v2 = v2 - v0;
-
-//   Vector N = crossProduct(v0v1, v0v2);
-//   float denom = dotProduct(N, N);
+   Point orig = segment.a;
+   Point dir = normalize(segment.b-segment.a);
+   Point v0 = triangle.x;
+   Point v1 = triangle.y;
+   Point v2 = triangle.z;
 
 
-//   float NdotRayDirection = dotProduct(N, dir);
-//   if (isCloseToZero(NdotRayDirection))
-//     return {false, {}};
+   Vector v0v1 = v1 - v0;
+   Vector v0v2 = v2 - v0;
+
+   Vector N = crossProduct(v0v1, v0v2);
+   
 
 
-//   float d = dotProduct(N, v0);
+   float NdotRayDirection = dotProduct(N, dir);
+   if (isCloseToZero(NdotRayDirection))
+     return {false, {}};
 
 
-//   t = (dotProduct(N, orig) + d) / NdotRayDirection;
-
-//   if (t < 0)
-//     return {false, {}};
+   float d = dotProduct(N, v0);
 
 
-//   Point P = orig + dir * t;
+   t = (dotProduct(N, orig) + d) / NdotRayDirection;
+
+   if (t < 0)
+     return {false, {}};
 
 
-//   Vector C;
+   Point P = orig + dir * t;
 
 
-//   Vector edge0 = v1 - v0;
-//   Vector vp0 = P - v0;
-//   C = crossProduct(edge0, vp0);
-//   if (dotProduct(N, C) < 0)
-//     return {false, {}};
+   Vector C;
 
 
-//   Vector edge1 = v2 - v1;
-//   Vector vp1 = P - v1;
-//   C = crossProduct(edge1, vp1);
-//   if ((u = dotProduct(N, C)) < 0)
-//     return {false, {}};
+   Vector edge0 = v1 - v0;
+   Vector vp0 = P - v0;
+   C = crossProduct(edge0, vp0);
+   if (dotProduct(N, C) < 0)
+     return {false, {}};
 
 
-//   Vector edge2 = v0 - v2;
-//   Vector vp2 = P - v2;
-//   C = crossProduct(edge2, vp2);
-//   if ((v = dotProduct(N, C)) < 0)
-//     return {false, {}};
+   Vector edge1 = v2 - v1;
+   Vector vp1 = P - v1;
+   C = crossProduct(edge1, vp1);
+   if ((u = dotProduct(N, C)) < 0)
+     return {false, {}};
 
-//   u /= denom;
-//   v /= denom;
 
-//   return {true, P};
-// }
+   Vector edge2 = v0 - v2;
+   Vector vp2 = P - v2;
+   C = crossProduct(edge2, vp2);
+   if ((v = dotProduct(N, C)) < 0)
+     return {false, {}};
+
+
+   return {true, P};
+ }
 
 // We assume point is on triangle
 RGB colorOfPoint(Point const& point, Triangle const& triangle)
@@ -280,12 +278,13 @@ RGB colorOfPoint(Point const& point, Triangle const& triangle)
 
 bool intersection(Segment const& segment, BoundingBox const& box)
 {
+	Vector dir = normalize(segment.b-segment.a);
   float dirfracX;
   float dirfracY;
   float dirfracZ;
-  dirfracX = 1.0f / segment.b.x;
-  dirfracY = 1.0f / segment.b.y;
-  dirfracZ = 1.0f / segment.b.z;
+  dirfracX = 1.0f / dir.x;
+  dirfracY = 1.0f / dir.y;
+  dirfracZ = 1.0f / dir.z;
 
   float t1 = (box.vMin.x - segment.a.x) * dirfracX;
   float t2 = (box.vMax.x - segment.a.x) * dirfracX;

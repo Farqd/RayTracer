@@ -29,7 +29,6 @@ public:
 
   static KdNode* build(std::vector<Triangle>& triangles, int depth = 0);
 
-  // TODO create funciton that finds intersection with a ray (returns triangle/point)
   FindResult find(Segment seg);
 
   ~KdNode();

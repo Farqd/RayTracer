@@ -54,14 +54,10 @@ set(SOURCE_FILES
     src/cpu/main.cpp
     src/cpu/RayTracer.cpp
     src/cpu/Utils.cpp
-    src/cpuTriangles/KdNode.cpp
-    src/cpuTriangles/RayTracerTriangles.cpp
     ${COMMON_SOURCE_FILES})
 set(HEADER_FILES
     src/cpu/RayTracer.h
     src/cpu/Utils.h
-    src/cpuTriangles/KdNode.h
-    src/cpuTriangles/RayTracerTriangles.h
     ${COMMON_HEADER_FILES})
 
 add_executable(RayTracer ${SOURCE_FILES} ${HEADER_FILES})
@@ -70,6 +66,29 @@ target_compile_options(RayTracer PUBLIC "$<$<CONFIG:Release>:${RELEASE_CXX_FLAGS
 target_compile_options(RayTracer PUBLIC "$<$<CONFIG:Debug>:${DEBUG_CXX_FLAGS}>")
 
 target_link_libraries(RayTracer Threads::Threads)
+
+# CPU Triangles executable
+
+set(SOURCE_FILES_TRIANGLES
+    src/cpu/Utils.cpp
+    src/cpuTriangles/KdNode.cpp
+    src/cpuTriangles/RayTracerTriangles.cpp
+    src/cpuTriangles/main.cpp
+    ${COMMON_SOURCE_FILES})
+  set(HEADER_FILES_TRIANGLES
+    src/cpu/Utils.h
+    src/cpuTriangles/KdNode.h
+    src/cpuTriangles/RayTracerTriangles.h
+    ${COMMON_HEADER_FILES})
+
+  add_executable(RayTracerTriangles ${SOURCE_FILES_TRIANGLES} ${HEADER_FILES_TRIANGLES})
+
+target_compile_options(RayTracerTriangles PUBLIC "$<$<CONFIG:Release>:${RELEASE_CXX_FLAGS}>")
+target_compile_options(RayTracerTriangles PUBLIC "$<$<CONFIG:Debug>:${DEBUG_CXX_FLAGS}>")
+
+target_link_libraries(RayTracerTriangles Threads::Threads)
+
+
 
 # CUDA executable
 if (CUDA_FOUND)

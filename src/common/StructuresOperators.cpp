@@ -32,3 +32,9 @@ std::ostream& operator<<(std::ostream& outs, Plane const& plane)
   outs << plane.P << " * " << plane.normal << " + " << plane.d << " = 0, Color: " << plane.color;
   return outs;
 }
+
+std::ostream& operator<<(std::ostream& outs, BoundingBox const& bb)
+{
+  outs << bb.vMin << " " << bb.vMax;
+  return outs;
+}

@@ -34,12 +34,6 @@ KdNode* KdNode::build(std::vector<Triangle>& triangles, int depth)
 
   KdNode* node = new KdNode();
 
-  if (triangles.size() < 10)
-  {
-    std::swap(node->triangles, triangles);
-    return node;
-  }
-
   node->bb.vMin.x = std::numeric_limits<float>::max();
   node->bb.vMin.y = std::numeric_limits<float>::max();
   node->bb.vMin.z = std::numeric_limits<float>::max();
@@ -61,6 +55,12 @@ KdNode* KdNode::build(std::vector<Triangle>& triangles, int depth)
     node->bb.vMax.x = std::max(node->bb.vMax.x, maxP.x);
     node->bb.vMax.y = std::max(node->bb.vMax.y, maxP.y);
     node->bb.vMax.z = std::max(node->bb.vMax.z, maxP.z);
+  }
+
+  if (triangles.size() < 20)
+  {
+    std::swap(node->triangles, triangles);
+    return node;
   }
 
   std::vector<Triangle> leftTrs;

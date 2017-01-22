@@ -9,20 +9,23 @@
 #include "common/Structures.h"
 #include "cpuTriangles/KdNode.h"
 
-class RayTracerTriangles
+class RayTracerTriangles : public RayTracerBase
 {
-  RayTracerTriangles(RayTracerConfig const& config, std::vector<Triangle>& triangles);
+public:
+  RayTracerTriangles(RayTracerConfig const& config, std::vector<Triangle>& triangles)
+    : RayTracerBase(config)
+    , threadNumber(std::thread::hardware_concurrency())
+  {
+    std::cerr << threadNumber << " threads available\n";
+    kdTree = KdNode::build(triangles);
+  }
 
   void processPixels();
 
 private:
-  RayTracerConfig const config;
-
   // We assume threadNumber < imageY
-  int const threadNumber = 2;
+  int const threadNumber = 1;
 
-
-  DynamicArray2D<RGB> bitmap;
   KdNode* kdTree = nullptr;
 
   float reflectionCoefficient = 0.1;
@@ -33,7 +36,7 @@ private:
                              Triangle const& triangle, int recursionLevel);
   RGB processPixelOnBackground();
   RGB calculateColorInLight(Point const& rayBeg, Point const& pointOnTriangle,
-                            Triangle const& triangle);
+                            Triangle const& triangle, RGB color);
   bool pointInShadow(Point const& point);
 };
 

@@ -93,4 +93,6 @@ std::ostream& operator<<(std::ostream& outs, Sphere const& sphere);
 
 std::ostream& operator<<(std::ostream& outs, Plane const& plane);
 
+std::ostream& operator<<(std::ostream& outs, BoundingBox const& bb);
+
 #endif // COMMON_STRUCTURES_OPERATORS_H

@@ -12,13 +12,6 @@
 #include "cpu/Utils.h"
 #include "cpu/Utils.h"
 
-RayTracerTriangles::RayTracerTriangles(RayTracerConfig const& config,
-                                       std::vector<Triangle>& triangles)
-  : config(config)
-  , bitmap(config.imageY * config.antiAliasing, config.imageZ * config.antiAliasing)
-{
-  kdTree = KdNode::build(triangles);
-}
 
 RGB RayTracerTriangles::processPixelOnBackground()
 {
@@ -38,17 +31,16 @@ RGB RayTracerTriangles::processPixelOnTriangle(Point const& rayBeg, Point const&
                                                Triangle const& triangle, int recursionLevel)
 {
   bool const isInShadow = pointInShadow(pointOnTriangle);
-
   RGB color = colorOfPoint(pointOnTriangle, triangle);
 
   RGB resultCol;
   if (isInShadow)
     resultCol = color * config.ambientCoefficient;
   else
-    resultCol = calculateColorInLight(rayBeg, pointOnTriangle, triangle);
+    resultCol = calculateColorInLight(rayBeg, pointOnTriangle, triangle, color);
 
-  if (recursionLevel >= config.maxRecursionLevel || isCloseToZero(reflectionCoefficient))
-    return resultCol;
+  // if (recursionLevel >= config.maxRecursionLevel || isCloseToZero(reflectionCoefficient))
+  return resultCol;
 
   Segment refl = reflection({rayBeg, pointOnTriangle}, triangle);
   RGB reflectedColor = processPixel(refl, recursionLevel + 1);
@@ -58,10 +50,10 @@ RGB RayTracerTriangles::processPixelOnTriangle(Point const& rayBeg, Point const&
 
 
 RGB RayTracerTriangles::calculateColorInLight(Point const& rayBeg, Point const& pointOnTriangle,
-                                              Triangle const& triangle)
+                                              Triangle const& triangle, RGB color)
 {
   // TODO
-  return RGB{};
+  return color;
   // float dot = dotProduct(normalVec, normalize(lightVec));
   // return currentColor
   //        * (std::max(0.0f, (1 - config.ambientCoefficient) * dot) + config.ambientCoefficient);
@@ -69,8 +61,9 @@ RGB RayTracerTriangles::calculateColorInLight(Point const& rayBeg, Point const& 
 
 RGB RayTracerTriangles::processPixel(Segment const& ray, int recursionLevel)
 {
-  FindResult triangleIntersec = kdTree->find(ray);
-
+  FindResult triangleIntersec;
+  if (kdTree != nullptr)
+    triangleIntersec = kdTree->find(ray);
   if (triangleIntersec.exists == false)
     return processPixelOnBackground();
 

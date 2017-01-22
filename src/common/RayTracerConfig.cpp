@@ -138,8 +138,8 @@ RayTracerConfig RayTracerConfig::defaultConfig()
   config.maxRecursionLevel = 1;
   config.ambientCoefficient = 0.1;
   config.imageX = 512;
-  config.imageY = 384 * config.antiAliasing;
-  config.imageZ = 512 * config.antiAliasing;
+  config.imageY = 384 * 2;
+  config.imageZ = 512 * 2;
   config.observer = {0, 0, 0};
   config.light = {1000, 2000, 2500};
 

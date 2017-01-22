@@ -112,9 +112,9 @@ Segment reflection(Segment const& segment, Triangle const& triangle)
   Vector v0v1 = v1 - v0; 
   Vector v0v2 = v2 - v0; 
     
-  Vector N = crossProduct(v0v1, v0v2); 
-  float denom = dotProduct(N, N);
-	N/=denom;
+  Vector N = normalize(crossProduct(v0v1, v0v2)); 
+ 
+	
 
  	ri -= N * (2 * dotProduct(ri, N));
   return {segment.b, segment.b + ri};

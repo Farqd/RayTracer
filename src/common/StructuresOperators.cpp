@@ -33,6 +33,13 @@ std::ostream& operator<<(std::ostream& outs, Plane const& plane)
   return outs;
 }
 
+std::ostream& operator<<(std::ostream& outs, Triangle const& triangle)
+{
+  outs << "x: " << triangle.x << " (" << triangle.colorX << ") y: " << triangle.y << " ("
+       << triangle.colorY << ") z: " << triangle.z << " (" << triangle.colorZ << ")";
+  return outs;
+}
+
 std::ostream& operator<<(std::ostream& outs, BoundingBox const& bb)
 {
   outs << bb.vMin << " " << bb.vMax;

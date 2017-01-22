@@ -12,14 +12,15 @@ int main(int argc, char* argv[])
   {
     std::cerr << "Reading config from file " << argv[1] << std::endl;
     config = RayTracerConfig::fromPlyFile(argv[1]);
-    config.antiAliasing = 2;
-    config.maxRecursionLevel = 1;
+    config.antiAliasing = 1;
+    config.maxRecursionLevel = 0;
     config.ambientCoefficient = 0.1;
     config.imageX = 512;
-    config.imageY = 384 * config.antiAliasing;
-    config.imageZ = 512 * config.antiAliasing;
+    config.imageY = 768;
+    config.imageZ = 1024;
     config.observer = {0, 0, 0};
     config.light = {1000, 2000, 2500};
+    config.scaleTriangles();
   }
   else
   {
@@ -60,10 +61,9 @@ int main(int argc, char* argv[])
       config.triangles.push_back(triangle);
     }
   }
-  std::cerr << config;
+  // std::cerr << config;
 
   RayTracerTriangles tracer(config);
-  std::cerr << "processPixels" << std::endl;
   tracer.processPixels();
   tracer.printBitmap(std::cout);
 }

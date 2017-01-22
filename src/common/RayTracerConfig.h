@@ -24,6 +24,7 @@ struct RayTracerConfig
   static RayTracerConfig fromFile(std::string const& path);
   static RayTracerConfig fromPlyFile(std::string const& path);
   static RayTracerConfig defaultConfig();
+  void scaleTriangles();
 
   friend std::ostream& operator<<(std::ostream& out, RayTracerConfig const& config);
 };

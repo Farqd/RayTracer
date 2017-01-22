@@ -27,7 +27,7 @@ public:
   // Consider changing to Triangle*
   std::vector<Triangle> triangles;
 
-  static KdNode* build(std::vector<Triangle>& triangles, int depth = 0);
+  static KdNode* build(std::vector<Triangle> const& triangles, int depth = 0);
 
   FindResult find(Segment seg);
 

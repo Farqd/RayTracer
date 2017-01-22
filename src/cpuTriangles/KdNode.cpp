@@ -26,7 +26,7 @@ Point getMax(Triangle const& tr)
 }
 }
 
-KdNode* KdNode::build(std::vector<Triangle>& triangles, int depth)
+KdNode* KdNode::build(std::vector<Triangle> const& triangles, int depth)
 {
   if (triangles.size() == 0)
     return nullptr;
@@ -57,9 +57,9 @@ KdNode* KdNode::build(std::vector<Triangle>& triangles, int depth)
     node->bb.vMax.z = std::max(node->bb.vMax.z, maxP.z);
   }
 
-  if (triangles.size() < 20)
+  if (triangles.size() < 1000000)
   {
-    std::swap(node->triangles, triangles);
+    node->triangles = triangles;
     return node;
   }
 
@@ -98,6 +98,11 @@ KdNode* KdNode::build(std::vector<Triangle>& triangles, int depth)
     }
   }
 
+  if (leftTrs.empty() || rightTrs.empty())
+  {
+    node->triangles = triangles;
+    return node;
+  }
   node->left = KdNode::build(leftTrs, depth + 1);
   node->right = KdNode::build(rightTrs, depth + 1);
 

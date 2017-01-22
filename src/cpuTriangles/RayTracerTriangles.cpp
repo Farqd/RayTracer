@@ -52,11 +52,15 @@ RGB RayTracerTriangles::processPixelOnTriangle(Point const& rayBeg, Point const&
 RGB RayTracerTriangles::calculateColorInLight(Point const& rayBeg, Point const& pointOnTriangle,
                                               Triangle const& triangle, RGB color)
 {
-  // TODO
-  return color;
-  // float dot = dotProduct(normalVec, normalize(lightVec));
-  // return currentColor
-  //        * (std::max(0.0f, (1 - config.ambientCoefficient) * dot) + config.ambientCoefficient);
+  Vector v0v1 = triangle.y - triangle.x;
+  Vector v0v2 = triangle.z - triangle.x;
+
+  Vector N = normalize(crossProduct(v0v1, v0v2));
+
+  Vector lightVec = config.light - pointOnTriangle;
+  float dot = dotProduct(N, normalize(lightVec));
+  return color
+         * (std::max(0.0f, (1 - config.ambientCoefficient) * dot) + config.ambientCoefficient);
 }
 
 RGB RayTracerTriangles::processPixel(Segment const& ray, int recursionLevel)

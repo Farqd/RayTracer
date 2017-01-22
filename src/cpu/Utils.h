@@ -86,7 +86,6 @@ inline RGB calculateColorFromReflection(RGB currentColor, RGB reflectedColor,
 }
 
 
-// New functions, consider changing return types if others are more convinient
 std::pair<bool, Point> intersection(Segment const& segment, Triangle const& triangle);
 
 // We assume point is on triangle

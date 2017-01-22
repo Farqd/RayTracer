@@ -276,41 +276,34 @@ bool intersectionWithRectangle(Segment const& segment, Point const& p0, Point co
 
 bool intersection(Segment const& segment, BoundingBox const& box)
 {
-	Point const& vMin = box.vMin;
-	Point const& vMax = box.vMax;
+	float dirfracX;
+	float dirfracY;
+	float dirfracZ;
+	dirfracX = 1.0f / segment.b.x;
+	dirfracY = 1.0f / segment.b.y;
+	dirfracZ = 1.0f / segment.b.z;
+	
+	float t1 = (box.vMin.x - segment.a.x)*dirfracX;
+	float t2 = (box.vMax.x - segment.a.x)*dirfracX;
+	float t3 = (box.vMin.y - segment.a.y)*dirfracY;
+	float t4 = (box.vMax.y - segment.a.y)*dirfracY;
+	float t5 = (box.vMin.z - segment.a.z)*dirfracZ;
+	float t6 = (box.vMax.z - segment.a.z)*dirfracZ;
 
-	Point p0 = vMin;
-	Point p1 = {vMin.x, vMin.y, vMax.z};
-	Point p2 = {vMin.x, vMax.y, vMax.z};
-	Point p3 = {vMin.x, vMax.y, vMin.z};
-	if (intersectionWithRectangle(segment, p0, p1, p2, p3)) return true;
-	//p0 = vMin;
-	//p1 = {vMin.x, vMin.y, vMax.z};
-	p2 = {vMax.x, vMin.y, vMax.z};
-	p3 = {vMax.x, vMin.y, vMin.z};
-	if (intersectionWithRectangle(segment, p0, p1, p2, p3)) return true;
-	//p0 = vMin;
-	p1 = {vMin.x, vMax.y, vMin.z};
-	p2 = {vMax.x, vMax.y, vMin.z};
-	//p3 = {vMax.x, vMin.y, vMin.z};
-	if (intersectionWithRectangle(segment, p0, p1, p2, p3)) return true;
+	float tmin = std::max(std::max(std::min(t1, t2), std::min(t3, t4)), std::min(t5, t6));
+	float tmax = std::min(std::min(std::max(t1, t2), std::max(t3, t4)), std::max(t5, t6));
 
-	p0 = vMax;
-	p1 = {vMax.x, vMax.y, vMin.z};
-	p2 = {vMax.x, vMin.y, vMin.z};
-	p3 = {vMax.x, vMin.y, vMax.z};
-	if (intersectionWithRectangle(segment, p0, p1, p2, p3)) return true;
+	
+	if (tmax < 0)
+	{
+		  return false;
+	}
 
-	//p0 = vMax;
-	//p1 = {vMax.x, vMax.y, vMin.z};
-	p2 = {vMin.x, vMax.y, vMin.z};
-	p3 = {vMin.x, vMax.y, vMax.z};
-	if (intersectionWithRectangle(segment, p0, p1, p2, p3)) return true;
-	//p0 = vMax;
-	p1 = {vMax.x, vMin.y, vMax.z};
-	p2 = {vMin.x, vMin.y, vMax.z};
-	//p3 = {vMin.x, vMax.y, vMax.z};
-	if (intersectionWithRectangle(segment, p0, p1, p2, p3)) return true;
 
-  return false;
+	if (tmin > tmax)
+	{
+		  return false;
+	}
+	return true;
+
 }

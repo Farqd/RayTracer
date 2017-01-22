@@ -37,7 +37,7 @@ RGB RayTracerTriangles::processPixelOnTriangle(Point const& rayBeg, Point const&
   if (isInShadow)
     resultCol = color * config.ambientCoefficient;
   else
-    resultCol = calculateColorInLight(rayBeg, pointOnTriangle, triangle, color);
+    resultCol = calculateColorInLight(pointOnTriangle, triangle, color);
 
   // if (recursionLevel >= config.maxRecursionLevel || isCloseToZero(reflectionCoefficient))
   return resultCol;
@@ -49,7 +49,7 @@ RGB RayTracerTriangles::processPixelOnTriangle(Point const& rayBeg, Point const&
 }
 
 
-RGB RayTracerTriangles::calculateColorInLight(Point const& rayBeg, Point const& pointOnTriangle,
+RGB RayTracerTriangles::calculateColorInLight(Point const& pointOnTriangle,
                                               Triangle const& triangle, RGB color)
 {
   Vector v0v1 = triangle.y - triangle.x;

@@ -35,8 +35,7 @@ private:
   RGB processPixelOnTriangle(Point const& rayBeg, Point const& pointOnTriangle,
                              Triangle const& triangle, int recursionLevel);
   RGB processPixelOnBackground();
-  RGB calculateColorInLight(Point const& rayBeg, Point const& pointOnTriangle,
-                            Triangle const& triangle, RGB color);
+  RGB calculateColorInLight(Point const& pointOnTriangle, Triangle const& triangle, RGB color);
   bool pointInShadow(Point const& point);
 };
 

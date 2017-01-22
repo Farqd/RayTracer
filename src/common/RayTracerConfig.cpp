@@ -234,7 +234,6 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
       }
       for (int i = 0; i < faceCount; ++i)
       {
-        Triangle face;
         int count;
         file >> count;
         if (count != 3) // only triangles supported

@@ -58,7 +58,7 @@ RGB RayTracerTriangles::calculateColorInLight(Point const& pointOnTriangle,
   Vector N = normalize(crossProduct(v0v1, v0v2));
 
   Vector lightVec = config.light - pointOnTriangle;
-  float dot = dotProduct(N, normalize(lightVec));
+  float dot = std::abs(dotProduct(N, normalize(lightVec)));
   return color
          * (std::max(0.0f, (1 - config.ambientCoefficient) * dot) + config.ambientCoefficient);
 }

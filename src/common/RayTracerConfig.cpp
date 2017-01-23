@@ -244,7 +244,7 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
         }
         int v1, v2, v3;
         file >> v1 >> v2 >> v3;
-        RGB color{100, 100, 100};
+        RGB color{rand() % 200, rand() % 200, rand() % 200};
         config.triangles.emplace_back(
             Triangle{vertices[v1], vertices[v2], vertices[v3], color, color, color});
       }
@@ -259,7 +259,8 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
 
 void swapVertex(Vector& a)
 {
-  std::swap(a.y, a.z);
+  //teapot
+  //std::swap(a.y, a.z);
   std::swap(a.x, a.z);
 }
 
@@ -271,16 +272,26 @@ void RayTracerConfig::scaleTriangles()
     swapVertex(t.y);
     swapVertex(t.z);
 
-    t.x *= 400;
-    t.y *= 400;
-    t.z *= 400;
+    // teapot
+    //t.x *= 400;
+    //t.y *= 400;
+    //t.z *= 400;
+    //dragon
+    t.x *= 10000;
+    t.y *= 10000;
+    t.z *= 10000;
 
     t.x.x += 2000.0f;
     t.y.x += 2000.0f;
     t.z.x += 2000.0f;
 
-    t.x.y -= 500;
-    t.y.y -= 500;
-    t.z.y -= 500;
+    // teapot
+    //t.x.y -= 500;
+    //t.y.y -= 500;
+    //t.z.y -= 500;
+    //dragon
+    t.x.y -= 1000;
+    t.y.y -= 1000;
+    t.z.y -= 1000;
   }
 }

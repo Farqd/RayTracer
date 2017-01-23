@@ -24,8 +24,7 @@ Vector normalize(Vector const &vec) { return vec / vectorLen(vec); }
 
 float distance(Point const &a, Point const &b) { return vectorLen(b - a); }
 
-std::pair<bool, Point> intersection(Segment const &segment,
-                                    Sphere const &sphere) {
+std::pair<bool, Point> intersection(Segment const &segment, Sphere const &sphere) {
   float x0 = segment.a.x;
   float y0 = segment.a.y;
   float z0 = segment.a.z;
@@ -102,9 +101,8 @@ Segment reflection(Segment const &segment, Triangle const &triangle) {
   ri -= N * (2 * dotProduct(ri, N));
   return {segment.b, segment.b + ri};
 }
-/*
-std::pair<bool, Point> intersection(Segment const& segment, Triangle const&
-triangle)
+
+std::pair<bool, Point> intersection(Segment const& segment, Triangle const& triangle)
 {
   Vector const& V1 = triangle.x;
   Vector const& V2 = triangle.y;
@@ -116,17 +114,16 @@ triangle)
   Vector e1, e2;
   Vector P, Q, T;
   float det, inv_det, u, v;
-  float t;
 
-  e1 = V2 - V1; // v0v1
-  e2 = V3 - V1; // v0v2
+  e1 = V2 - V1;
+  e2 = V3 - V1;
 
   P = crossProduct(D, e2);
-
   det = dotProduct(e1, P);
 
   if (isCloseToZero(det))
     return {false, {}};
+
   inv_det = 1.f / det;
   T = O - V1;
   u = dotProduct(T, P) * inv_det;
@@ -134,38 +131,23 @@ triangle)
     return {false, {}};
 
   Q = crossProduct(T, e1);
-
   v = dotProduct(D, Q) * inv_det;
 
   if (v < 0.f || u + v > 1.f)
     return {false, {}};
 
-  t = dotProduct(e2, Q) * inv_det;
-
-  if (t > 0)// && !isCloseToZero(t))
+  float t = dotProduct(e2, Q) * inv_det;
+  if (t > std::numeric_limits<float>::epsilon())
   {
     Point res = segment.a + D*t;
-    //e2 *= u;
-    //res += e2;
-
-    //e1 *= v;
-    //res += e1;
-
     return {true, res};
   }
-
-  // intersection = v0+u*v0v2+v*v0v1;
 
   return {false, {}};
 }
 
-*/
-std::pair<bool, Point> intersection(Segment const &segment,
-                                    Triangle const &triangle) {
-  float t;
-  float u;
-  float v;
-
+/*
+std::pair<bool, Point> intersection(Segment const &segment, Triangle const &triangle) {
   Point orig = segment.a;
   Point dir = normalize(segment.b - segment.a);
   Point v0 = triangle.x;
@@ -183,7 +165,7 @@ std::pair<bool, Point> intersection(Segment const &segment,
 
   float d = dotProduct(N, v0);
 
-  t = (dotProduct(N, orig) + d) / NdotRayDirection;
+  float t = (dotProduct(N, orig) + d) / NdotRayDirection;
 
   if (t < 0)
     return {false, {}};
@@ -195,23 +177,27 @@ std::pair<bool, Point> intersection(Segment const &segment,
   Vector edge0 = v1 - v0;
   Vector vp0 = P - v0;
   C = crossProduct(edge0, vp0);
+
   if (dotProduct(N, C) < 0)
     return {false, {}};
 
   Vector edge1 = v2 - v1;
   Vector vp1 = P - v1;
   C = crossProduct(edge1, vp1);
-  if ((u = dotProduct(N, C)) < 0)
+
+  if (dotProduct(N, C) < 0)
     return {false, {}};
 
   Vector edge2 = v0 - v2;
   Vector vp2 = P - v2;
   C = crossProduct(edge2, vp2);
-  if ((v = dotProduct(N, C)) < 0)
+
+  if (dotProduct(N, C) < 0)
     return {false, {}};
 
   return {true, P};
 }
+*/
 
 // We assume point is on triangle
 RGB colorOfPoint(Point const &point, Triangle const &triangle) {

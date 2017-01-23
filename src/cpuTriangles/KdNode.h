@@ -16,8 +16,8 @@ struct FindResult
 class KdNode
 {
 private:
-  FindResult findInTriangles(Segment seg);
-  FindResult findRecursive(Segment seg);
+  FindResult findRecursive(Segment seg, Triangle const& excludedTriangle);
+  FindResult findInTriangles(Segment seg, Triangle const& excludedTriangle);
 
 public:
   BoundingBox bb;
@@ -27,9 +27,9 @@ public:
   // Consider changing to Triangle*
   std::vector<Triangle> triangles;
 
-  static KdNode* build(std::vector<Triangle> const& triangles, int depth = 0);
+  FindResult find(Segment seg, Triangle const& excludedTriangle);
 
-  FindResult find(Segment seg);
+  static KdNode* build(std::vector<Triangle> const& triangles, int depth = 0);
 
   ~KdNode();
 };

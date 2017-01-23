@@ -36,7 +36,7 @@ private:
                              Triangle const& triangle, int recursionLevel);
   RGB processPixelOnBackground();
   RGB calculateColorInLight(Point const& pointOnTriangle, Triangle const& triangle, RGB color);
-  bool pointInShadow(Point const& point);
+  bool pointInShadow(Point const& point, Triangle const& triangle);
 };
 
 #endif // COMMON_RAYTRACERTRIANGLES_H

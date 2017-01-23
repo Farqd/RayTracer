@@ -19,10 +19,10 @@ RGB RayTracerTriangles::processPixelOnBackground()
 }
 
 
-bool RayTracerTriangles::pointInShadow(Point const& point)
+bool RayTracerTriangles::pointInShadow(Point const& point, Triangle const& triangle)
 {
   Segment seg = {point, config.light};
-  auto const& res = kdTree->find(seg);
+  auto const& res = kdTree->find(seg, triangle);
 
   return res.exists && distance(point, res.point) < distance(point, config.light);
 }
@@ -30,7 +30,7 @@ bool RayTracerTriangles::pointInShadow(Point const& point)
 RGB RayTracerTriangles::processPixelOnTriangle(Point const& rayBeg, Point const& pointOnTriangle,
                                                Triangle const& triangle, int recursionLevel)
 {
-  bool const isInShadow = pointInShadow(pointOnTriangle);
+  bool const isInShadow = pointInShadow(pointOnTriangle, triangle);
   RGB color = colorOfPoint(pointOnTriangle, triangle);
 
   RGB resultCol;
@@ -67,7 +67,7 @@ RGB RayTracerTriangles::processPixel(Segment const& ray, int recursionLevel)
 {
   FindResult triangleIntersec;
   if (kdTree != nullptr)
-    triangleIntersec = kdTree->find(ray);
+    triangleIntersec = kdTree->find(ray, Triangle{{0,0,0},{0,0,0},{0,0,0}});
   if (triangleIntersec.exists == false)
     return processPixelOnBackground();
 

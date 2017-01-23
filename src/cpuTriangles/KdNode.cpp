@@ -109,7 +109,7 @@ KdNode* KdNode::build(std::vector<Triangle> const& triangles, int depth)
   return node;
 }
 
-FindResult KdNode::findInTriangles(Segment seg)
+FindResult KdNode::findInTriangles(Segment seg, Triangle const& excludedTriangle)
 {
   FindResult res;
 
@@ -117,6 +117,8 @@ FindResult KdNode::findInTriangles(Segment seg)
 
   for (auto const& triangle : triangles)
   {
+    if (triangle == excludedTriangle)
+      continue;
     std::pair<bool, Point> const& intersec = intersection(seg, triangle);
 
     if (intersec.first && distance(seg.a, intersec.second) < currDist)
@@ -131,10 +133,10 @@ FindResult KdNode::findInTriangles(Segment seg)
   return res;
 }
 
-FindResult KdNode::findRecursive(Segment seg)
+FindResult KdNode::findRecursive(Segment seg, Triangle const& excludedTriangle)
 {
-  FindResult const& resL = left ? left->find(seg) : FindResult{};
-  FindResult const& resR = right ? right->find(seg) : FindResult{};
+  FindResult const& resL = left ? left->find(seg, excludedTriangle) : FindResult{};
+  FindResult const& resR = right ? right->find(seg, excludedTriangle) : FindResult{};
 
   FindResult res;
   if (!resL.exists && !resR.exists)
@@ -152,7 +154,7 @@ FindResult KdNode::findRecursive(Segment seg)
   return res;
 }
 
-FindResult KdNode::find(Segment seg)
+FindResult KdNode::find(Segment seg, Triangle const& excludedTriangle)
 {
   FindResult res;
 
@@ -160,9 +162,9 @@ FindResult KdNode::find(Segment seg)
     return res;
 
   if (triangles.empty())
-    return findRecursive(seg);
+    return findRecursive(seg, excludedTriangle);
   else
-    return findInTriangles(seg);
+    return findInTriangles(seg, excludedTriangle);
 }
 
 KdNode::~KdNode()

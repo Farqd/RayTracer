@@ -19,6 +19,9 @@ struct Point
   float x;
   float y;
   float z;
+  bool operator==(Point const& other) const {
+    return x == other.x && y == other.y && z == other.z;
+  }
 };
 
 using Vector = Point;
@@ -55,6 +58,10 @@ struct Triangle
   RGB colorX;
   RGB colorY;
   RGB colorZ;
+
+  bool operator==(Triangle const& other) const {
+    return x == other.x && y == other.y && z == other.z;
+  }
 };
 
 struct BoundingBox

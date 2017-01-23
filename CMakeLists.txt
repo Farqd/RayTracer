@@ -124,4 +124,42 @@ if (CUDA_FOUND)
       ${CUDA_SOURCE_FILES} ${CUDA_PTX_FILES} ${CUDA_HEADER_FILES})
 
   target_link_libraries(RayTracerCuda "${CUDA_LIBRARIES}" cuda)
+
+  # CUDA triangles
+
+  set(CUDA_TRIANGLES_SOURCE_FILES
+      src/cudaTriangles/main.cpp
+      src/cudaTriangles/RayTracerCudaTriangles.cpp
+      src/cudaTriangles/KdTreeBuilder.cpp
+      ${COMMON_SOURCE_FILES})
+
+  set(CUDA_TRIANGLES_HEADER_FILES
+      src/cudaTriangles/RayTracerCudaTriangles.h
+      src/cudaTriangles/CuUtils.h
+      src/cudaTriangles/KdTreeStructures.h
+      src/cudaTriangles/KdTreeBuilder.h
+      ${COMMON_HEADER_FILES})
+
+  set(CUDA_TRIANGLES_CU_FILES
+      src/cudaTriangles/RayTracingTriangles.cu)
+
+  set(CUDA_TRIANGLES_PTX_FILES
+      ${CMAKE_BINARY_DIR}/raytracingtriangles.ptx)
+
+  cuda_compile_ptx(
+      CUDA_TRIANGLES_GENERATED_PTX_FILES
+      ${CUDA_TRIANGLES_CU_FILES})
+
+  add_custom_command(
+      OUTPUT ${CMAKE_BINARY_DIR}/raytracingtriangles.ptx
+      COMMAND ${CMAKE_COMMAND} -E
+      rename ${CUDA_TRIANGLES_GENERATED_PTX_FILES} ${CMAKE_BINARY_DIR}/raytracingtriangles.ptx
+      DEPENDS ${CUDA_TRIANGLES_GENERATED_PTX_FILES})
+
+  cuda_add_executable(
+      RayTracerCudaTriangles
+      ${CUDA_TRIANGLES_SOURCE_FILES} ${CUDA_TRIANGLES_PTX_FILES} ${CUDA_TRIANGLES_HEADER_FILES})
+
+  target_link_libraries(RayTracerCudaTriangles "${CUDA_LIBRARIES}" cuda)
+
 endif ()

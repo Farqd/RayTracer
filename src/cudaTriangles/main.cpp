@@ -3,7 +3,8 @@
 
 #include "common/RayTracerConfig.h"
 #include "common/Structures.h"
-#include "cpuTriangles/RayTracerTriangles.h"
+#include "common/StructuresOperators.h"
+#include "cudaTriangles/RayTracerCudaTriangles.h"
 
 int main(int argc, char* argv[])
 {
@@ -21,7 +22,7 @@ int main(int argc, char* argv[])
     config.observer = {0, 0, 0};
     config.light = {1000, 2000, 2500};
     config.scaleTriangles();
-    config.background = {0, 0, 0};
+    config.background = {255, 255, 255};
   }
   else
   {
@@ -62,9 +63,8 @@ int main(int argc, char* argv[])
       config.triangles.push_back(triangle);
     }
   }
-  // std::cerr << config;
 
-  RayTracerTriangles tracer(config);
-  tracer.processPixels();
+  RayTracerCudaTriangles tracer(config);
+  tracer.processPixelsCuda();
   tracer.printBitmap(std::cout);
 }

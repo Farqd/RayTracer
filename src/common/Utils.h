@@ -7,7 +7,7 @@
 #include "common/Structures.h"
 #include "common/StructuresOperators.h"
 
-Point getMinPoint(Triangle const& tr)
+inline Point getMinPoint(Triangle const& tr)
 {
   Point res;
   res.x = std::min({tr.x.x, tr.y.x, tr.z.x});
@@ -16,7 +16,7 @@ Point getMinPoint(Triangle const& tr)
   return res;
 }
 
-Point getMaxPoint(Triangle const& tr)
+inline Point getMaxPoint(Triangle const& tr)
 {
   Point res;
   res.x = std::max({tr.x.x, tr.y.x, tr.z.x});

@@ -73,6 +73,24 @@ Plane parsePlane(std::ifstream& file)
   return plane;
 }
 
+Point getMin(Triangle const& tr)
+{
+  Point res;
+  res.x = std::min({tr.x.x, tr.y.x, tr.z.x});
+  res.y = std::min({tr.x.y, tr.y.y, tr.z.y});
+  res.z = std::min({tr.x.z, tr.y.z, tr.z.z});
+  return res;
+}
+
+Point getMax(Triangle const& tr)
+{
+  Point res;
+  res.x = std::max({tr.x.x, tr.y.x, tr.z.x});
+  res.y = std::max({tr.x.y, tr.y.y, tr.z.y});
+  res.z = std::max({tr.x.z, tr.y.z, tr.z.z});
+  return res;
+}
+
 } // anonymous namespace
 
 RayTracerConfig RayTracerConfig::fromFile(std::string const& path)
@@ -244,7 +262,7 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
         }
         int v1, v2, v3;
         file >> v1 >> v2 >> v3;
-        RGB color{rand() % 200, rand() % 200, rand() % 200};
+        RGB color{uint8_t(rand() % 200), uint8_t(rand() % 200), uint8_t(rand() % 200)};
         config.triangles.emplace_back(
             Triangle{vertices[v1], vertices[v2], vertices[v3], color, color, color});
       }
@@ -260,7 +278,7 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
 void swapVertex(Vector& a)
 {
   // teapot
-  // std::swap(a.y, a.z);
+  std::swap(a.y, a.z);
   std::swap(a.x, a.z);
 }
 
@@ -271,27 +289,58 @@ void RayTracerConfig::scaleTriangles()
     swapVertex(t.x);
     swapVertex(t.y);
     swapVertex(t.z);
+  }
 
-    // teapot
-    // t.x *= 400;
-    // t.y *= 400;
-    // t.z *= 400;
-    // dragon
-    t.x *= 10000;
-    t.y *= 10000;
-    t.z *= 10000;
+  float expectedSize = 2500.f;
+  float expectedDist = 2000.f;
+  float expectedY = 0.f;
+  float expectedZ = 0.f;
 
-    t.x.x += 2000.0f;
-    t.y.x += 2000.0f;
-    t.z.x += 2000.0f;
+  float minX = std::numeric_limits<float>::max();
+  float minY = std::numeric_limits<float>::max();
+  float minZ = std::numeric_limits<float>::max();
 
-    // teapot
-    // t.x.y -= 500;
-    // t.y.y -= 500;
-    // t.z.y -= 500;
-    // dragon
-    t.x.y -= 1000;
-    t.y.y -= 1000;
-    t.z.y -= 1000;
+  float maxX = std::numeric_limits<float>::min();
+  float maxY = std::numeric_limits<float>::min();
+  float maxZ = std::numeric_limits<float>::min();
+
+  for (Triangle& t : triangles)
+  {
+    Point minP = getMin(t);
+    minX = std::min(minX, minP.x);
+    minY = std::min(minY, minP.y);
+    minZ = std::min(minZ, minP.z);
+
+    Point maxP = getMax(t);
+
+    maxX = std::max(maxX, maxP.x);
+    maxY = std::max(maxY, maxP.y);
+    maxZ = std::max(maxZ, maxP.z);
+  }
+
+  float maxDiff = std::max({maxX - minX, maxY - minY, maxZ - minZ});
+  float coef = expectedSize / maxDiff;
+
+  float diffX = expectedDist - minX;
+  float diffY = coef * (expectedY - (maxY + minY) / 2);
+  float diffZ = coef * (expectedZ - (maxZ + minZ) / 2);
+
+  for (Triangle& t : triangles)
+  {
+    t.x *= coef;
+    t.y *= coef;
+    t.z *= coef;
+
+    t.x.x += diffX;
+    t.y.x += diffX;
+    t.z.x += diffX;
+
+    t.x.y += diffY;
+    t.y.y += diffY;
+    t.z.y += diffY;
+
+    t.x.z += diffZ;
+    t.y.z += diffZ;
+    t.z.z += diffZ;
   }
 }

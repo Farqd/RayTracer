@@ -56,9 +56,9 @@ struct Triangle
   Point x;
   Point y;
   Point z;
-  RGB colorX;
-  RGB colorY;
-  RGB colorZ;
+  RGB colorX = {};
+  RGB colorY = {};
+  RGB colorZ = {};
 
   bool operator==(Triangle const& other) const
   {

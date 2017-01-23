@@ -259,8 +259,8 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
 
 void swapVertex(Vector& a)
 {
-  //teapot
-  //std::swap(a.y, a.z);
+  // teapot
+  // std::swap(a.y, a.z);
   std::swap(a.x, a.z);
 }
 
@@ -273,10 +273,10 @@ void RayTracerConfig::scaleTriangles()
     swapVertex(t.z);
 
     // teapot
-    //t.x *= 400;
-    //t.y *= 400;
-    //t.z *= 400;
-    //dragon
+    // t.x *= 400;
+    // t.y *= 400;
+    // t.z *= 400;
+    // dragon
     t.x *= 10000;
     t.y *= 10000;
     t.z *= 10000;
@@ -286,10 +286,10 @@ void RayTracerConfig::scaleTriangles()
     t.z.x += 2000.0f;
 
     // teapot
-    //t.x.y -= 500;
-    //t.y.y -= 500;
-    //t.z.y -= 500;
-    //dragon
+    // t.x.y -= 500;
+    // t.y.y -= 500;
+    // t.z.y -= 500;
+    // dragon
     t.x.y -= 1000;
     t.y.y -= 1000;
     t.z.y -= 1000;

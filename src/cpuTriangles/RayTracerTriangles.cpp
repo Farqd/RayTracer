@@ -67,7 +67,7 @@ RGB RayTracerTriangles::processPixel(Segment const& ray, int recursionLevel)
 {
   FindResult triangleIntersec;
   if (kdTree != nullptr)
-    triangleIntersec = kdTree->find(ray, Triangle{{0,0,0},{0,0,0},{0,0,0}});
+    triangleIntersec = kdTree->find(ray, Triangle{{0, 0, 0}, {0, 0, 0}, {0, 0, 0}});
   if (triangleIntersec.exists == false)
     return processPixelOnBackground();
 

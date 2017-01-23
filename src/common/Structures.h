@@ -19,7 +19,8 @@ struct Point
   float x;
   float y;
   float z;
-  bool operator==(Point const& other) const {
+  bool operator==(Point const& other) const
+  {
     return x == other.x && y == other.y && z == other.z;
   }
 };
@@ -59,7 +60,8 @@ struct Triangle
   RGB colorY;
   RGB colorZ;
 
-  bool operator==(Triangle const& other) const {
+  bool operator==(Triangle const& other) const
+  {
     return x == other.x && y == other.y && z == other.z;
   }
 };

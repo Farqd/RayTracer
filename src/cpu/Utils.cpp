@@ -6,11 +6,13 @@
 
 #include "common/Structures.h"
 
-float dotProduct(Vector const &a, Vector const &b) {
+float dotProduct(Vector const& a, Vector const& b)
+{
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-Vector crossProduct(Vector const &a, Vector const &b) {
+Vector crossProduct(Vector const& a, Vector const& b)
+{
   Vector vec;
   vec.x = a.y * b.z - b.y * a.z;
   vec.y = a.z * b.x - a.x * b.z;
@@ -18,13 +20,23 @@ Vector crossProduct(Vector const &a, Vector const &b) {
   return vec;
 }
 
-float vectorLen(Vector const &vec) { return std::sqrt(dotProduct(vec, vec)); }
+float vectorLen(Vector const& vec)
+{
+  return std::sqrt(dotProduct(vec, vec));
+}
 
-Vector normalize(Vector const &vec) { return vec / vectorLen(vec); }
+Vector normalize(Vector const& vec)
+{
+  return vec / vectorLen(vec);
+}
 
-float distance(Point const &a, Point const &b) { return vectorLen(b - a); }
+float distance(Point const& a, Point const& b)
+{
+  return vectorLen(b - a);
+}
 
-std::pair<bool, Point> intersection(Segment const &segment, Sphere const &sphere) {
+std::pair<bool, Point> intersection(Segment const& segment, Sphere const& sphere)
+{
   float x0 = segment.a.x;
   float y0 = segment.a.y;
   float z0 = segment.a.z;
@@ -43,8 +55,8 @@ std::pair<bool, Point> intersection(Segment const &segment, Sphere const &sphere
 
   float a = dx * dx + dy * dy + dz * dz;
   float b = 2 * dx * (x0 - cx) + 2 * dy * (y0 - cy) + 2 * dz * (z0 - cz);
-  float c = cx * cx + cy * cy + cz * cz + x0 * x0 + y0 * y0 + z0 * z0 -
-            2 * (cx * x0 + cy * y0 + cz * z0) - sphere.radius * sphere.radius;
+  float c = cx * cx + cy * cy + cz * cz + x0 * x0 + y0 * y0 + z0 * z0
+            - 2 * (cx * x0 + cy * y0 + cz * z0) - sphere.radius * sphere.radius;
 
   float discriminant = b * b - 4 * a * c;
   if (!isCloseToZero(discriminant) && discriminant < 0)
@@ -57,7 +69,8 @@ std::pair<bool, Point> intersection(Segment const &segment, Sphere const &sphere
   return {true, {x0 + t * dx, y0 + t * dy, z0 + t * dz}};
 }
 
-Segment reflection(Segment const &segment, Sphere const &sphere) {
+Segment reflection(Segment const& segment, Sphere const& sphere)
+{
   Point normalVector = normalize((segment.b - sphere.center) / sphere.radius);
 
   Vector ri = normalize(segment.b - segment.a);
@@ -67,8 +80,8 @@ Segment reflection(Segment const &segment, Sphere const &sphere) {
   return {segment.b, segment.b + ri};
 }
 
-std::pair<bool, Point> intersection(Segment const &segment,
-                                    Plane const &plane) {
+std::pair<bool, Point> intersection(Segment const& segment, Plane const& plane)
+{
   Vector V = segment.b - segment.a;
   float x = dotProduct(V, plane.normal);
   if (x == 0)
@@ -81,13 +94,15 @@ std::pair<bool, Point> intersection(Segment const &segment,
   return {true, segment.a + V * t};
 }
 
-Segment reflection(Segment const &segment, Plane const &plane) {
+Segment reflection(Segment const& segment, Plane const& plane)
+{
   Vector ri = segment.b - segment.a;
   ri -= plane.normal * (2 * dotProduct(ri, plane.normal));
   return {segment.b, segment.b + ri};
 }
 
-Segment reflection(Segment const &segment, Triangle const &triangle) {
+Segment reflection(Segment const& segment, Triangle const& triangle)
+{
   Vector ri = segment.b - segment.a;
   Point v0 = triangle.x;
   Point v1 = triangle.y;
@@ -109,7 +124,7 @@ std::pair<bool, Point> intersection(Segment const& segment, Triangle const& tria
   Vector const& V3 = triangle.z;
 
   Vector const& O = segment.a;
-  Vector const& D = normalize(segment.b-segment.a);
+  Vector const& D = normalize(segment.b - segment.a);
 
   Vector e1, e2;
   Vector P, Q, T;
@@ -139,7 +154,7 @@ std::pair<bool, Point> intersection(Segment const& segment, Triangle const& tria
   float t = dotProduct(e2, Q) * inv_det;
   if (t > std::numeric_limits<float>::epsilon())
   {
-    Point res = segment.a + D*t;
+    Point res = segment.a + D * t;
     return {true, res};
   }
 
@@ -200,7 +215,8 @@ std::pair<bool, Point> intersection(Segment const &segment, Triangle const &tria
 */
 
 // We assume point is on triangle
-RGB colorOfPoint(Point const &point, Triangle const &triangle) {
+RGB colorOfPoint(Point const& point, Triangle const& triangle)
+{
   float u;
   float v;
 
@@ -229,11 +245,11 @@ RGB colorOfPoint(Point const &point, Triangle const &triangle) {
   u /= denom;
   v /= denom;
 
-  return triangle.colorX * u + triangle.colorY * v +
-         triangle.colorZ * (1 - u - v);
+  return triangle.colorX * u + triangle.colorY * v + triangle.colorZ * (1 - u - v);
 }
 
-bool intersection(Segment const &segment, BoundingBox const &box) {
+bool intersection(Segment const& segment, BoundingBox const& box)
+{
   Vector dir = normalize(segment.b - segment.a);
   float dirfracX;
   float dirfracY;
@@ -249,16 +265,16 @@ bool intersection(Segment const &segment, BoundingBox const &box) {
   float t5 = (box.vMin.z - segment.a.z) * dirfracZ;
   float t6 = (box.vMax.z - segment.a.z) * dirfracZ;
 
-  float tmin =
-      std::max(std::max(std::min(t1, t2), std::min(t3, t4)), std::min(t5, t6));
-  float tmax =
-      std::min(std::min(std::max(t1, t2), std::max(t3, t4)), std::max(t5, t6));
+  float tmin = std::max(std::max(std::min(t1, t2), std::min(t3, t4)), std::min(t5, t6));
+  float tmax = std::min(std::min(std::max(t1, t2), std::max(t3, t4)), std::max(t5, t6));
 
-  if (tmax < 0) {
+  if (tmax < 0)
+  {
     return false;
   }
 
-  if (tmin > tmax) {
+  if (tmin > tmax)
+  {
     return false;
   }
   return true;

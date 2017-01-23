@@ -34,7 +34,7 @@ include_directories("${BASEPATH}")
 set(CMAKE_CXX_FLAGS "-Wall -Wextra") # forget previous flags to avoid unwanted errors
 
 set(CMAKE_CXX_STANDARD 14)
-set(RELEASE_CXX_FLAGS -Werror -O2)
+set(RELEASE_CXX_FLAGS -O3)
 set(DEBUG_CXX_FLAGS -ggdb)
 
 set(COMMON_SOURCE_FILES

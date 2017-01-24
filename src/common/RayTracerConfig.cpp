@@ -207,7 +207,8 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
   int faceCount = 0;
 
   std::vector<Vector> vertices;
-
+  std::vector<RGB> colors;
+  bool isRGB = false;
   while (file >> token)
   {
     if (token == "comment")
@@ -222,6 +223,10 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
         file >> token;
         while (token == "property")
         {
+          file >> token;
+          if(token == "uchar")
+            isRGB = true;
+
           std::getline(file, token);
           file >> token;
         }
@@ -249,7 +254,15 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
         Vector v;
         file >> v.x >> v.y >> v.z;
         vertices.push_back(v);
+
+        if(isRGB)
+        {
+          int r,g,b;
+          file >> r >> g >> b;
+          colors.push_back({uint8_t(r), uint8_t(g), uint8_t(b)});
+        }
       }
+      
       for (int i = 0; i < faceCount; ++i)
       {
         int count;
@@ -262,9 +275,13 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
         }
         int v1, v2, v3;
         file >> v1 >> v2 >> v3;
-        RGB color{uint8_t(rand() % 200), uint8_t(rand() % 200), uint8_t(rand() % 200)};
-        config.triangles.emplace_back(
-            Triangle{vertices[v1], vertices[v2], vertices[v3], color, color, color});
+        // RGB color{uint8_t(rand() % 200), uint8_t(rand() % 200), uint8_t(rand() % 200)};
+        if(colors.empty())
+          config.triangles.emplace_back(
+            Triangle{vertices[v1], vertices[v2], vertices[v3], 150, 150, 150});
+        else
+          config.triangles.emplace_back(
+            Triangle{vertices[v1], vertices[v2], vertices[v3], colors[v1], colors[v2], colors[v3]});
       }
     }
     // else
@@ -278,7 +295,7 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
 void swapVertex(Vector& a)
 {
   // teapot
-  std::swap(a.y, a.z);
+  //std::swap(a.y, a.z);
   std::swap(a.x, a.z);
 }
 
@@ -289,9 +306,13 @@ void RayTracerConfig::scaleTriangles()
     swapVertex(t.x);
     swapVertex(t.y);
     swapVertex(t.z);
+
+    t.x.x = -t.x.x;
+    t.y.x = -t.y.x;
+    t.z.x = -t.z.x;
   }
 
-  float expectedSize = 2500.f;
+  float expectedSize = 3500.f;
   float expectedDist = 2000.f;
   float expectedY = 0.f;
   float expectedZ = 0.f;
@@ -321,9 +342,9 @@ void RayTracerConfig::scaleTriangles()
   float maxDiff = std::max({maxX - minX, maxY - minY, maxZ - minZ});
   float coef = expectedSize / maxDiff;
 
-  float diffX = expectedDist - minX;
-  float diffY = coef * (expectedY - (maxY + minY) / 2);
-  float diffZ = coef * (expectedZ - (maxZ + minZ) / 2);
+  float diffX = expectedDist - minX*coef;
+  float diffY = expectedY - coef * (maxY + minY) / 2;
+  float diffZ = expectedZ - coef * (maxZ + minZ) / 2;
 
   for (Triangle& t : triangles)
   {
@@ -344,3 +365,4 @@ void RayTracerConfig::scaleTriangles()
     t.z.z += diffZ;
   }
 }
+

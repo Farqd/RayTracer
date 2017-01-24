@@ -15,7 +15,7 @@
 
 RGB RayTracerTriangles::processPixelOnBackground()
 {
-  return {0, 0, 0};
+  return {250, 250, 250};
 }
 
 

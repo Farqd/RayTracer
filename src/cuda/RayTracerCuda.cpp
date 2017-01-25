@@ -41,7 +41,6 @@ void RayTracerCuda::processPixelsCuda()
 
   CUdeviceptr bitmapDev;
   CU_CHECK(cuMemAlloc(&bitmapDev, sizeof(RGB) * bitmap.size()));
-  CU_CHECK(cuMemcpyHtoD(bitmapDev, bitmapTab, sizeof(RGB) * bitmap.size()));
 
   cudaError code = cudaDeviceSetLimit (cudaLimitStackSize, 2048*2);
   if(code != cudaSuccess)

@@ -21,7 +21,7 @@ struct FindTriangleResult
 struct Stack
 {
   size_t size = 0;
-  int data[40];
+  int data[30];
 
   __device__ void push(int const& t)
   {

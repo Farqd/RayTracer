@@ -91,7 +91,7 @@ void RayTracerCudaTriangles::processPixelsCuda()
                   &leafNodesNum, &leafNodesDev, &splitNodesNum, &splitNodesDev};
 
   int threadsX = 32;
-  int threadsY = 32;
+  int threadsY = 16;
   int blocksX = (bitmap.rows + threadsX - 1) / threadsX;
   int blocksY = (bitmap.cols + threadsY - 1) / threadsY;
 

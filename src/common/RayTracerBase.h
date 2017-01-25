@@ -16,7 +16,7 @@ struct RayTracerBase
   {
   }
 
-  RayTracerConfig const config;
+  RayTracerConfig config;
   DynamicArray2D<RGB> bitmap;
 
   void printBitmap(std::ostream& out);

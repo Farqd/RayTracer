@@ -65,11 +65,12 @@ static bool goesLeft(Triangle const& triangle, int const axis, float const split
   return false;
 }
 
-int KdTreeBuilder::build(std::vector<Triangle> const& triangles, int depth)
+int KdTreeBuilder::build(std::vector<Triangle>& triangles, int depth)
 {
   if (triangles.size() == 0)
     return 0; // valid index is either negative or positive, see SplitNode
 
+  max_d = std::max(max_d, depth);
   if (triangles.size() < trianglesInLeafBound)
     return addLeaf(triangles);
 
@@ -86,7 +87,31 @@ int KdTreeBuilder::build(std::vector<Triangle> const& triangles, int depth)
                                          : rightTrs.push_back(triangle);
 
   if (leftTrs.empty() || rightTrs.empty())
-    return addLeaf(triangles);
+  {
+    switch (axis)
+    {
+      case 0:
+        std::sort(triangles.begin(), triangles.end(), [](auto const& t1, auto const& t2) {
+          return getMinPoint(t1).x < getMinPoint(t2).x;
+        });
+        break;
+      case 1:
+        std::sort(triangles.begin(), triangles.end(), [](auto const& t1, auto const& t2) {
+          return getMinPoint(t1).y < getMinPoint(t2).y;
+        });
+        break;
+      case 2:
+        std::sort(triangles.begin(), triangles.end(), [](auto const& t1, auto const& t2) {
+          return getMinPoint(t1).z < getMinPoint(t2).z;
+        });
+        break;
+    }
+    auto mid = triangles.begin() + triangles.size() / 2;
+    leftTrs.clear();
+    rightTrs.clear();
+    leftTrs.insert(leftTrs.end(), triangles.begin(), mid);
+    rightTrs.insert(rightTrs.end(), mid, triangles.end());
+  }
 
   splitNodes.emplace_back();
   int const nodeIdx = static_cast<int>(splitNodes.size()) - 1;

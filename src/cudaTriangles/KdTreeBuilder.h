@@ -15,16 +15,19 @@ struct KdTreeBuilder
   std::vector<SplitNode> splitNodes;
   std::vector<LeafNode> leafNodes;
   std::vector<Triangle> treeTriangles;
+  int max_d = -1;
 
-  int build(std::vector<Triangle> const& triangles)
+  int build(std::vector<Triangle>& triangles)
   {
-    return build(triangles, 0);
+    int idx = build(triangles, 0);
+    std::cerr << max_d << std::endl;
+    return idx;
   }
 
 private:
   size_t const trianglesInLeafBound;
 
-  int build(std::vector<Triangle> const& triangles, int depth);
+  int build(std::vector<Triangle>& triangles, int depth);
 
   int addLeaf(std::vector<Triangle> const& triangles);
 };

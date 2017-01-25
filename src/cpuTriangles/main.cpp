@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
     config.observer = {0, 0, 0};
     config.light = {1000, 2000, 2500};
     config.scaleTriangles();
-    config.background = {0, 0, 0};
+    config.background = {255, 255, 255};
   }
   else
   {

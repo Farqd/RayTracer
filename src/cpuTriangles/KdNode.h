@@ -1,7 +1,6 @@
 #ifndef KDNODE_H
 #define KDNODE_H
 
-
 #include "common/Structures.h"
 
 #include <vector>
@@ -29,7 +28,7 @@ public:
 
   FindResult find(Segment seg, Triangle const& excludedTriangle);
 
-  static KdNode* build(std::vector<Triangle> const& triangles, int depth = 0);
+  static KdNode* build(std::vector<Triangle>& triangles, int depth = 0);
 
   ~KdNode();
 };

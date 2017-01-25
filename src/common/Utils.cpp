@@ -119,40 +119,31 @@ Segment reflection(Segment const& segment, Triangle const& triangle)
 
 std::pair<bool, Point> intersection(Segment const& segment, Triangle const& triangle)
 {
-  Vector const& V1 = triangle.x;
-  Vector const& V2 = triangle.y;
-  Vector const& V3 = triangle.z;
+  Vector const D = normalize(segment.b - segment.a);
 
-  Vector const& O = segment.a;
-  Vector const& D = normalize(segment.b - segment.a);
+  Vector e1 = triangle.y - triangle.x;
+  Vector e2 = triangle.z - triangle.x;
 
-  Vector e1, e2;
-  Vector P, Q, T;
-  float det, inv_det, u, v;
-
-  e1 = V2 - V1;
-  e2 = V3 - V1;
-
-  P = crossProduct(D, e2);
-  det = dotProduct(e1, P);
+  Vector P = crossProduct(D, e2);
+  float det = dotProduct(e1, P);
 
   if (isCloseToZero(det))
     return {false, {}};
 
-  inv_det = 1.f / det;
-  T = O - V1;
-  u = dotProduct(T, P) * inv_det;
+  float inv_det = 1.f / det;
+  Vector T = segment.a - triangle.x;
+  float u = dotProduct(T, P) * inv_det;
   if (u < 0.f || u > 1.f)
     return {false, {}};
 
-  Q = crossProduct(T, e1);
-  v = dotProduct(D, Q) * inv_det;
+  Vector Q = crossProduct(T, e1);
+  float v = dotProduct(D, Q) * inv_det;
 
   if (v < 0.f || u + v > 1.f)
     return {false, {}};
 
   float t = dotProduct(e2, Q) * inv_det;
-  if (t > std::numeric_limits<float>::epsilon())
+  if (t > 0)
   {
     Point res = segment.a + D * t;
     return {true, res};

@@ -17,7 +17,7 @@ public:
     , threadNumber(std::thread::hardware_concurrency())
   {
     std::cerr << threadNumber << " threads available\n";
-    kdTree = KdNode::build(config.triangles);
+    kdTree = KdNode::build(const_cast<RayTracerConfig&>(config).triangles);
   }
 
   void processPixels();

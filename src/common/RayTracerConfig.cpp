@@ -261,7 +261,7 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
         // RGB color{uint8_t(rand() % 200), uint8_t(rand() % 200), uint8_t(rand() % 200)};
         if (colors.empty())
           config.triangles.emplace_back(
-              Triangle{vertices[v1], vertices[v2], vertices[v3], {200, 200, 200}, {200, 200, 200}});
+              Triangle{vertices[v1], vertices[v2], vertices[v3], {40, 200, 40}, {50, 50, 200}, {0,0,0}});
         else
           config.triangles.emplace_back(Triangle{vertices[v1], vertices[v2], vertices[v3],
                                                  colors[v1], colors[v2], colors[v3]});

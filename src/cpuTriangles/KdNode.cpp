@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <vector>
 
-KdNode* KdNode::build(std::vector<Triangle> const& triangles, int depth)
+KdNode* KdNode::build(std::vector<Triangle>& triangles, int depth)
 {
   if (triangles.size() == 0)
     return nullptr;
@@ -82,8 +82,29 @@ KdNode* KdNode::build(std::vector<Triangle> const& triangles, int depth)
 
   if (leftTrs.empty() || rightTrs.empty())
   {
-    node->triangles = triangles;
-    return node;
+    switch (axis)
+    {
+      case 0:
+        std::sort(triangles.begin(), triangles.end(), [](auto const& t1, auto const& t2) {
+          return getMinPoint(t1).x < getMinPoint(t2).x;
+        });
+        break;
+      case 1:
+        std::sort(triangles.begin(), triangles.end(), [](auto const& t1, auto const& t2) {
+          return getMinPoint(t1).y < getMinPoint(t2).y;
+        });
+        break;
+      case 2:
+        std::sort(triangles.begin(), triangles.end(), [](auto const& t1, auto const& t2) {
+          return getMinPoint(t1).z < getMinPoint(t2).z;
+        });
+        break;
+    }
+    auto mid = triangles.begin() + triangles.size() / 2;
+    leftTrs.clear();
+    rightTrs.clear();
+    leftTrs.insert(leftTrs.end(), triangles.begin(), mid);
+    rightTrs.insert(rightTrs.end(), mid, triangles.end());
   }
   node->left = KdNode::build(leftTrs, depth + 1);
   node->right = KdNode::build(rightTrs, depth + 1);

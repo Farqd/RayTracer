@@ -5,18 +5,8 @@
 
 #include "common/Structures.h"
 
-struct RayTracerConfig
+struct RayTracerConfig : BaseConfig
 {
-  int antiAliasing = 2;
-  int maxRecursionLevel = 1;
-  float ambientCoefficient = 0.1;
-
-  int imageX;
-  int imageY;
-  int imageZ;
-  Point observer;
-  Point light;
-
   std::vector<Sphere> spheres;
   std::vector<Plane> planes;
   std::vector<Triangle> triangles;

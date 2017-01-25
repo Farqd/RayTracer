@@ -71,4 +71,19 @@ struct BoundingBox
   Point vMin;
   Point vMax;
 };
+
+struct BaseConfig
+{
+  int antiAliasing = 2;
+  int maxRecursionLevel = 1;
+  float ambientCoefficient = 0.1;
+
+  int imageX;
+  int imageY;
+  int imageZ;
+  Point observer;
+  Point light;
+  RGB background = {0, 0, 0};
+};
+
 #endif // COMMON_STRUCTURES_H

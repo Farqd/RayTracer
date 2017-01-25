@@ -70,7 +70,6 @@ int KdTreeBuilder::build(std::vector<Triangle>& triangles, int depth)
   if (triangles.size() == 0)
     return 0; // valid index is either negative or positive, see SplitNode
 
-  max_d = std::max(max_d, depth);
   if (triangles.size() < trianglesInLeafBound)
     return addLeaf(triangles);
 

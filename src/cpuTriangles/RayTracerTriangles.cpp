@@ -1,6 +1,5 @@
 #include "cpuTriangles/RayTracerTriangles.h"
 
-
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
@@ -17,7 +16,6 @@ RGB RayTracerTriangles::processPixelOnBackground()
 {
   return config.background;
 }
-
 
 bool RayTracerTriangles::pointInShadow(Point const& point, Triangle const& triangle)
 {
@@ -39,8 +37,8 @@ RGB RayTracerTriangles::processPixelOnTriangle(Point const& rayBeg, Point const&
   else
     resultCol = calculateColorInLight(pointOnTriangle, triangle, color);
 
-  // if (recursionLevel >= config.maxRecursionLevel || isCloseToZero(reflectionCoefficient))
-  return resultCol;
+  if (recursionLevel >= config.maxRecursionLevel || isCloseToZero(reflectionCoefficient))
+    return resultCol;
 
   Segment refl = reflection({rayBeg, pointOnTriangle}, triangle);
   RGB reflectedColor = processPixel(refl, recursionLevel + 1);

@@ -15,13 +15,10 @@ struct KdTreeBuilder
   std::vector<SplitNode> splitNodes;
   std::vector<LeafNode> leafNodes;
   std::vector<Triangle> treeTriangles;
-  int max_d = -1;
 
   int build(std::vector<Triangle>& triangles)
   {
-    int idx = build(triangles, 0);
-    std::cerr << max_d << std::endl;
-    return idx;
+    return build(triangles, 0);
   }
 
 private:

@@ -164,17 +164,15 @@ processPixel(Segment const& ray, KdTreeData const& treeData, BaseConfig const& c
   else
     resultCol = calculateColorInLight(triangleIntersec.point, triangle, color, config);
 
-  return resultCol;
+  float reflectionCoefficient = 0.1;
 
-  //float reflectionCoefficient = 0.1;
-  //
-  //if (recursionLevel >= config.maxRecursionLevel || isCloseToZero(reflectionCoefficient))
-  //  return resultCol;
-  //
-  //Segment refl = reflection({ray.a, triangleIntersec.point}, triangle);
-  //RGB reflectedColor = processPixel(refl, treeData, config, recursionLevel + 1);
-  //
-  //return calculateColorFromReflection(resultCol, reflectedColor, reflectionCoefficient);
+  if (recursionLevel >= config.maxRecursionLevel || isCloseToZero(reflectionCoefficient))
+    return resultCol;
+
+  Segment refl = reflection({ray.a, triangleIntersec.point}, triangle);
+  RGB reflectedColor = processPixel(refl, treeData, config, recursionLevel + 1);
+
+  return calculateColorFromReflection(resultCol, reflectedColor, reflectionCoefficient);
 }
 
 __global__ void computePixel(RGB* bitmap,

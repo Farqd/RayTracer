@@ -1,30 +1,9 @@
 #include "cpuTriangles/KdNode.h"
 #include "common/Structures.h"
-#include "cpu/Utils.h"
+#include "common/Utils.h"
 
 #include <algorithm>
 #include <vector>
-
-namespace
-{
-Point getMin(Triangle const& tr)
-{
-  Point res;
-  res.x = std::min({tr.x.x, tr.y.x, tr.z.x});
-  res.y = std::min({tr.x.y, tr.y.y, tr.z.y});
-  res.z = std::min({tr.x.z, tr.y.z, tr.z.z});
-  return res;
-}
-
-Point getMax(Triangle const& tr)
-{
-  Point res;
-  res.x = std::max({tr.x.x, tr.y.x, tr.z.x});
-  res.y = std::max({tr.x.y, tr.y.y, tr.z.y});
-  res.z = std::max({tr.x.z, tr.y.z, tr.z.z});
-  return res;
-}
-}
 
 KdNode* KdNode::build(std::vector<Triangle> const& triangles, int depth)
 {
@@ -45,8 +24,8 @@ KdNode* KdNode::build(std::vector<Triangle> const& triangles, int depth)
 
   for (auto const& triangle : triangles)
   {
-    Point const& minP = getMin(triangle);
-    Point const& maxP = getMax(triangle);
+    Point const& minP = getMinPoint(triangle);
+    Point const& maxP = getMaxPoint(triangle);
 
     node->bb.vMin.x = std::min(node->bb.vMin.x, minP.x);
     node->bb.vMin.y = std::min(node->bb.vMin.y, minP.y);
@@ -87,13 +66,16 @@ KdNode* KdNode::build(std::vector<Triangle> const& triangles, int depth)
     switch (axis)
     {
       case 0:
-        getMin(triangle).x < midValue ? leftTrs.push_back(triangle) : rightTrs.push_back(triangle);
+        getMinPoint(triangle).x < midValue ? leftTrs.push_back(triangle)
+                                           : rightTrs.push_back(triangle);
         break;
       case 1:
-        getMin(triangle).y < midValue ? leftTrs.push_back(triangle) : rightTrs.push_back(triangle);
+        getMinPoint(triangle).y < midValue ? leftTrs.push_back(triangle)
+                                           : rightTrs.push_back(triangle);
         break;
       case 2:
-        getMin(triangle).z < midValue ? leftTrs.push_back(triangle) : rightTrs.push_back(triangle);
+        getMinPoint(triangle).z < midValue ? leftTrs.push_back(triangle)
+                                           : rightTrs.push_back(triangle);
         break;
     }
   }

@@ -7,9 +7,9 @@
 #include <thread>
 #include <vector>
 
-#include "Utils.h"
 #include "common/StructuresOperators.h"
-#include "cpu/Utils.h"
+#include "common/Utils.h"
+#include "common/Utils.h"
 
 RGB RayTracer::processPixelOnBackground()
 {

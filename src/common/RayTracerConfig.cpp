@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "common/StructuresOperators.h"
+#include "common/Utils.h"
 
 namespace
 {
@@ -73,7 +74,7 @@ Plane parsePlane(std::ifstream& file)
   return plane;
 }
 
-Point getMin(Triangle const& tr)
+Point getMinPoint(Triangle const& tr)
 {
   Point res;
   res.x = std::min({tr.x.x, tr.y.x, tr.z.x});
@@ -82,7 +83,7 @@ Point getMin(Triangle const& tr)
   return res;
 }
 
-Point getMax(Triangle const& tr)
+Point getMaxPoint(Triangle const& tr)
 {
   Point res;
   res.x = std::max({tr.x.x, tr.y.x, tr.z.x});
@@ -224,7 +225,7 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
         while (token == "property")
         {
           file >> token;
-          if(token == "uchar")
+          if (token == "uchar")
             isRGB = true;
 
           std::getline(file, token);
@@ -255,14 +256,14 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
         file >> v.x >> v.y >> v.z;
         vertices.push_back(v);
 
-        if(isRGB)
+        if (isRGB)
         {
-          int r,g,b;
+          int r, g, b;
           file >> r >> g >> b;
           colors.push_back({uint8_t(r), uint8_t(g), uint8_t(b)});
         }
       }
-      
+
       for (int i = 0; i < faceCount; ++i)
       {
         int count;
@@ -276,12 +277,12 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
         int v1, v2, v3;
         file >> v1 >> v2 >> v3;
         // RGB color{uint8_t(rand() % 200), uint8_t(rand() % 200), uint8_t(rand() % 200)};
-        if(colors.empty())
+        if (colors.empty())
           config.triangles.emplace_back(
-            Triangle{vertices[v1], vertices[v2], vertices[v3], 150, 150, 150});
+              Triangle{vertices[v1], vertices[v2], vertices[v3], 150, 150, 150});
         else
-          config.triangles.emplace_back(
-            Triangle{vertices[v1], vertices[v2], vertices[v3], colors[v1], colors[v2], colors[v3]});
+          config.triangles.emplace_back(Triangle{vertices[v1], vertices[v2], vertices[v3],
+                                                 colors[v1], colors[v2], colors[v3]});
       }
     }
     // else
@@ -295,7 +296,7 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
 void swapVertex(Vector& a)
 {
   // teapot
-  //std::swap(a.y, a.z);
+  // std::swap(a.y, a.z);
   std::swap(a.x, a.z);
 }
 
@@ -327,12 +328,12 @@ void RayTracerConfig::scaleTriangles()
 
   for (Triangle& t : triangles)
   {
-    Point minP = getMin(t);
+    Point minP = getMinPoint(t);
     minX = std::min(minX, minP.x);
     minY = std::min(minY, minP.y);
     minZ = std::min(minZ, minP.z);
 
-    Point maxP = getMax(t);
+    Point maxP = getMaxPoint(t);
 
     maxX = std::max(maxX, maxP.x);
     maxY = std::max(maxY, maxP.y);
@@ -342,7 +343,7 @@ void RayTracerConfig::scaleTriangles()
   float maxDiff = std::max({maxX - minX, maxY - minY, maxZ - minZ});
   float coef = expectedSize / maxDiff;
 
-  float diffX = expectedDist - minX*coef;
+  float diffX = expectedDist - minX * coef;
   float diffY = expectedY - coef * (maxY + minY) / 2;
   float diffZ = expectedZ - coef * (maxZ + minZ) / 2;
 
@@ -365,4 +366,3 @@ void RayTracerConfig::scaleTriangles()
     t.z.z += diffZ;
   }
 }
-

@@ -39,12 +39,14 @@ set(DEBUG_CXX_FLAGS -ggdb)
 
 set(COMMON_SOURCE_FILES
     src/common/StructuresOperators.cpp
+    src/common/Utils.cpp
     src/common/RayTracerBase.cpp
     src/common/RayTracerConfig.cpp)
 set(COMMON_HEADER_FILES
     src/common/Structures.h
     src/common/StructuresOperators.h
     src/common/RayTracerBase.h
+    src/common/Utils.h
     src/common/RayTracerConfig.h
     src/common/DynamicArray2D.h)
 
@@ -53,11 +55,9 @@ set(COMMON_HEADER_FILES
 set(SOURCE_FILES
     src/cpu/main.cpp
     src/cpu/RayTracer.cpp
-    src/cpu/Utils.cpp
     ${COMMON_SOURCE_FILES})
 set(HEADER_FILES
     src/cpu/RayTracer.h
-    src/cpu/Utils.h
     ${COMMON_HEADER_FILES})
 
 add_executable(RayTracer ${SOURCE_FILES} ${HEADER_FILES})
@@ -69,18 +69,16 @@ target_link_libraries(RayTracer Threads::Threads)
 # CPU Triangles executable
 
 set(SOURCE_FILES_TRIANGLES
-    src/cpu/Utils.cpp
     src/cpuTriangles/KdNode.cpp
     src/cpuTriangles/RayTracerTriangles.cpp
     src/cpuTriangles/main.cpp
     ${COMMON_SOURCE_FILES})
-  set(HEADER_FILES_TRIANGLES
-    src/cpu/Utils.h
+set(HEADER_FILES_TRIANGLES
     src/cpuTriangles/KdNode.h
     src/cpuTriangles/RayTracerTriangles.h
     ${COMMON_HEADER_FILES})
 
-  add_executable(RayTracerTriangles ${SOURCE_FILES_TRIANGLES} ${HEADER_FILES_TRIANGLES})
+add_executable(RayTracerTriangles ${SOURCE_FILES_TRIANGLES} ${HEADER_FILES_TRIANGLES})
 
 target_compile_options(RayTracerTriangles PUBLIC "$<$<CONFIG:Release>:${RELEASE_CXX_FLAGS}>")
 target_compile_options(RayTracerTriangles PUBLIC "$<$<CONFIG:Debug>:${DEBUG_CXX_FLAGS}>")

@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "common/StructuresOperators.h"
-#include "cpu/Utils.h"
-#include "cpu/Utils.h"
+#include "common/Utils.h"
+#include "common/Utils.h"
 
 
 RGB RayTracerTriangles::processPixelOnBackground()

@@ -9,7 +9,6 @@
 
 #include "common/StructuresOperators.h"
 #include "common/Utils.h"
-#include "common/Utils.h"
 
 
 RGB RayTracerTriangles::processPixelOnBackground()
@@ -37,13 +36,13 @@ RGB RayTracerTriangles::processPixelOnTriangle(Point const& rayBeg, Point const&
   else
     resultCol = calculateColorInLight(pointOnTriangle, triangle, color);
 
-  if (recursionLevel >= config.maxRecursionLevel || isCloseToZero(reflectionCoefficient))
+  if (recursionLevel >= config.maxRecursionLevel || isCloseToZero(triangle.reflectionCoefficient))
     return resultCol;
 
   Segment refl = reflection({rayBeg, pointOnTriangle}, triangle);
   RGB reflectedColor = processPixel(refl, recursionLevel + 1);
 
-  return calculateColorFromReflection(resultCol, reflectedColor, reflectionCoefficient);
+  return calculateColorFromReflection(resultCol, reflectedColor, triangle.reflectionCoefficient);
 }
 
 

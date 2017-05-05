@@ -28,8 +28,6 @@ private:
 
   KdNode* kdTree = nullptr;
 
-  float reflectionCoefficient = 0.1;
-
   void processPixelsThreads(int threadId);
   RGB processPixel(Segment const& ray, int recursionLevel);
   RGB processPixelOnTriangle(Point const& rayBeg, Point const& pointOnTriangle,

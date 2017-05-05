@@ -59,7 +59,7 @@ struct Triangle
   RGB colorX = {};
   RGB colorY = {};
   RGB colorZ = {};
-
+	float reflectionCoefficient = 0.1;
   bool operator==(Triangle const& other) const
   {
     return x == other.x && y == other.y && z == other.z;

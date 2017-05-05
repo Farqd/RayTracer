@@ -117,6 +117,26 @@ Segment reflection(Segment const& segment, Triangle const& triangle)
   return {segment.b, segment.b + ri};
 }
 
+Segment randomReflection(Segment const& segment, Triangle const& triangle)
+{
+  Vector ri = segment.a - segment.b;
+  Point v0 = triangle.x;
+  Point v1 = triangle.y;
+  Point v2 = triangle.z;
+
+  Vector v0v1 = v1 - v0;
+  Vector v0v2 = v2 - v0;
+
+  Vector N = normalize(crossProduct(v0v1, v0v2));
+
+  Vector v = {randFloat(1.0, 2.0), randFloat(1.0, 2.0), randFloat(1.0, 2.0)};
+  if (dotProduct(ri, N)*dotProduct(v, N)<0)
+  {
+    v = v*(-1.0);
+  }
+  return {segment.b, segment.b + v};
+}
+
 std::pair<bool, Point> intersection(Segment const& segment, Triangle const& triangle)
 {
   Vector const D = normalize(segment.b - segment.a);

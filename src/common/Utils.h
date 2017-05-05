@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <vector>
+#include <cstdlib>
 
 #include "common/Structures.h"
 #include "common/StructuresOperators.h"
@@ -23,6 +24,13 @@ inline Point getMaxPoint(Triangle const& tr)
   res.y = std::max({tr.x.y, tr.y.y, tr.z.y});
   res.z = std::max({tr.x.z, tr.y.z, tr.z.z});
   return res;
+}
+
+inline float randFloat(float a, float b) {
+    float random = ((float) rand()) / (float) RAND_MAX;
+    float diff = b - a;
+    float r = random * diff;
+    return a + r;
 }
 
 float dotProduct(Vector const& a, Vector const& b);
@@ -66,6 +74,7 @@ Segment reflection(Segment const& segment, Plane const& plane);
 
 Segment reflection(Segment const& segment, Triangle const& triangle);
 
+Segment randomReflection(Segment const& segment, Triangle const& triangle);
 
 template <typename T>
 bool isCloseToZero(T x)

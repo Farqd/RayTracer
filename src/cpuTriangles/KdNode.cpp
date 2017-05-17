@@ -36,7 +36,7 @@ KdNode* KdNode::build(std::vector<Triangle>& triangles, int depth)
     node->bb.vMax.z = std::max(node->bb.vMax.z, maxP.z);
   }
 
-  if (triangles.size() < 20)
+  if (triangles.size() < 10)
   {
     node->triangles = triangles;
     return node;

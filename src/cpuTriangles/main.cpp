@@ -13,14 +13,16 @@ int main(int argc, char* argv[])
   {
     std::cerr << "Reading config from file " << argv[1] << std::endl;
     config = RayTracerConfig::fromPlyFile(argv[1]);
-    config.antiAliasing = 1;
-    config.maxRecursionLevel = 0;
+    config.antiAliasing = 2;
+    config.maxRecursionLevel = 1;
     config.ambientCoefficient = 0.1;
     config.imageX = 512;
     config.imageY = 768;
+    //config.imageY = 500;
     config.imageZ = 1024;
+    //config.imageZ = 500;
     config.observer = {0, 0, 0};
-    config.light = {1000, 2000, 2500};
+    config.light = {200, 1000, 200};
     config.scaleTriangles();
     config.background = {255, 255, 255};
   }

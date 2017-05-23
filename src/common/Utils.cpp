@@ -129,7 +129,9 @@ Segment randomReflection(Segment const& segment, Triangle const& triangle)
 
   Vector N = normalize(crossProduct(v0v1, v0v2));
 
-  Vector v = {randFloat(1.0, 2.0), randFloat(1.0, 2.0), randFloat(1.0, 2.0)};
+  float alpha = randFloat(0.0, M_PI*2);
+  float beta = randFloat(0.0, M_PI*2);
+  Vector v = {static_cast<float>(sin(alpha)*sin(beta)), static_cast<float>(cos(alpha)*sin(beta)), static_cast<float>(cos(beta))};
   if (dotProduct(ri, N)*dotProduct(v, N)<0)
   {
     v = v*(-1.0);

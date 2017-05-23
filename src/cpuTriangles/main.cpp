@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
     tr.colorX = {0, 0, 200};
     tr.colorY = {200, 0, 0};
     tr.colorZ = {0, 200, 0};
-		tr.reflectionCoefficient = 0.1;
+    tr.reflectionCoefficient = 0.1;
 
     config.triangles.push_back(tr);
 
@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
       triangle.colorX = {uint8_t(rand() % 200), uint8_t(rand() % 200), uint8_t(rand() % 200)};
       triangle.colorY = {uint8_t(rand() % 200), uint8_t(rand() % 200), uint8_t(rand() % 200)};
       triangle.colorZ = {uint8_t(rand() % 200), uint8_t(rand() % 200), uint8_t(rand() % 200)};
-			triangle.reflectionCoefficient = 0.1;
+      triangle.reflectionCoefficient = 0.1;
 
       config.triangles.push_back(triangle);
     }

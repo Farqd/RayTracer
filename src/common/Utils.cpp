@@ -115,8 +115,7 @@ Segment randomReflection(Segment const& segment, Plane const& plane)
   Vector N = plane.normal;
 
   float alpha = randFloat(0.0, M_PI*2);
-  float beta = randFloat(0.0, M_PI*2);
-  float u = static_cast<float>(cos(beta));
+  float u = randFloat(-1.0, 1.0);
   float s = std::sqrt(1.0-u*u);
   Vector v = {static_cast<float>(sin(alpha)*s), static_cast<float>(cos(alpha)*s), u};
   if (dotProduct(ri, N)*dotProduct(v, N)<0)
@@ -143,8 +142,7 @@ Segment randomReflection(Segment const& segment, Triangle const& triangle)
   Vector N = triangle.normal;
 
   float alpha = randFloat(0.0, M_PI*2);
-  float beta = randFloat(0.0, M_PI*2);
-  float u = static_cast<float>(cos(beta));
+  float u = randFloat(-1.0, 1.0);
   float s = std::sqrt(1.0-u*u);
   Vector v = {static_cast<float>(sin(alpha)*s), static_cast<float>(cos(alpha)*s), u};
   if (dotProduct(ri, N)*dotProduct(v, N)<0)

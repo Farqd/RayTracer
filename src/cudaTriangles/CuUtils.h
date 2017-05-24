@@ -192,14 +192,9 @@ __device__ RGB colorOfPoint(Point const& point, Triangle const& triangle)
 __device__ Segment reflection(Segment const& segment, Triangle const& triangle)
 {
   Vector ri = segment.b - segment.a;
-  Point v0 = triangle.x;
-  Point v1 = triangle.y;
-  Point v2 = triangle.z;
+  
 
-  Vector v0v1 = v1 - v0;
-  Vector v0v2 = v2 - v0;
-
-  Vector N = normalize(crossProduct(v0v1, v0v2));
+  Vector N = triangle.normal;
 
   ri -= N * (2 * dotProduct(ri, N));
   return {segment.b, segment.b + ri};

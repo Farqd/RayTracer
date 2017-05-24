@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "common/RayTracerConfig.h"
+#include "common/Utils.h"
 #include "common/Structures.h"
 #include "cpuTriangles/RayTracerTriangles.h"
 
@@ -36,6 +37,7 @@ int main(int argc, char* argv[])
     tr.colorY = {200, 0, 0};
     tr.colorZ = {0, 200, 0};
     tr.reflectionCoefficient = 0.1;
+    tr.normal = getNormalVector(tr);
 
     config.triangles.push_back(tr);
 
@@ -59,6 +61,7 @@ int main(int argc, char* argv[])
       triangle.colorY = {uint8_t(rand() % 200), uint8_t(rand() % 200), uint8_t(rand() % 200)};
       triangle.colorZ = {uint8_t(rand() % 200), uint8_t(rand() % 200), uint8_t(rand() % 200)};
       triangle.reflectionCoefficient = 0.1;
+      triangle.normal = getNormalVector(triangle);
 
       config.triangles.push_back(triangle);
     }

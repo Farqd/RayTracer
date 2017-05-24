@@ -35,6 +35,13 @@ float distance(Point const& a, Point const& b)
   return vectorLen(b - a);
 }
 
+Vector getNormalVector(Triangle const& triangle)
+{
+  Vector v0v1 = triangle.y - triangle.x;
+  Vector v0v2 = triangle.z - triangle.x;
+  return normalize(crossProduct(v0v1, v0v2));
+}
+
 std::pair<bool, Point> intersection(Segment const& segment, Sphere const& sphere)
 {
   float x0 = segment.a.x;
@@ -101,17 +108,29 @@ Segment reflection(Segment const& segment, Plane const& plane)
   return {segment.b, segment.b + ri};
 }
 
+Segment randomReflection(Segment const& segment, Plane const& plane)
+{
+  Vector ri = segment.a - segment.b;
+
+  Vector N = plane.normal;
+
+  float alpha = randFloat(0.0, M_PI*2);
+  float beta = randFloat(0.0, M_PI*2);
+  float u = static_cast<float>(cos(beta));
+  float s = std::sqrt(1.0-u*u);
+  Vector v = {static_cast<float>(sin(alpha)*s), static_cast<float>(cos(alpha)*s), u};
+  if (dotProduct(ri, N)*dotProduct(v, N)<0)
+  {
+    v = v*(-1.0);
+  }
+  return {segment.b, segment.b + v};
+}
+
+
 Segment reflection(Segment const& segment, Triangle const& triangle)
 {
   Vector ri = segment.b - segment.a;
-  Point v0 = triangle.x;
-  Point v1 = triangle.y;
-  Point v2 = triangle.z;
-
-  Vector v0v1 = v1 - v0;
-  Vector v0v2 = v2 - v0;
-
-  Vector N = normalize(crossProduct(v0v1, v0v2));
+  Vector N = triangle.normal;
 
   ri -= N * (2 * dotProduct(ri, N));
   return {segment.b, segment.b + ri};
@@ -120,18 +139,14 @@ Segment reflection(Segment const& segment, Triangle const& triangle)
 Segment randomReflection(Segment const& segment, Triangle const& triangle)
 {
   Vector ri = segment.a - segment.b;
-  Point v0 = triangle.x;
-  Point v1 = triangle.y;
-  Point v2 = triangle.z;
 
-  Vector v0v1 = v1 - v0;
-  Vector v0v2 = v2 - v0;
-
-  Vector N = normalize(crossProduct(v0v1, v0v2));
+  Vector N = triangle.normal;
 
   float alpha = randFloat(0.0, M_PI*2);
   float beta = randFloat(0.0, M_PI*2);
-  Vector v = {static_cast<float>(sin(alpha)*sin(beta)), static_cast<float>(cos(alpha)*sin(beta)), static_cast<float>(cos(beta))};
+  float u = static_cast<float>(cos(beta));
+  float s = std::sqrt(1.0-u*u);
+  Vector v = {static_cast<float>(sin(alpha)*s), static_cast<float>(cos(alpha)*s), u};
   if (dotProduct(ri, N)*dotProduct(v, N)<0)
   {
     v = v*(-1.0);

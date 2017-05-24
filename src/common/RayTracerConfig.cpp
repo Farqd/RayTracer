@@ -155,7 +155,7 @@ RayTracerConfig RayTracerConfig::defaultConfig()
 
   // Plane has one face!
   // front
-  config.planes.push_back({{6000, 0, 0}, {-1, 0, 0}, 6000, {178, 170, 30}, 0.05});
+  config.planes.push_back({{6000, 0, 0}, {-1, 0, 0}, 6000, {255, 255, 255}, 1});
   // back
   config.planes.push_back({{-2000, 0, 0}, {1, 0, 0}, 2000, {245, 222, 179}});
   // top
@@ -265,6 +265,7 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
         else
           config.triangles.emplace_back(Triangle{vertices[v1], vertices[v2], vertices[v3],
                                                  colors[v1], colors[v2], colors[v3]});
+        config.triangles[config.triangles.size()-1].normal = getNormalVector(config.triangles[config.triangles.size()-1]);
       }
     }
     // else
@@ -278,7 +279,7 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
 void swapVertex(Vector& a)
 {
   // teapot
-  // std::swap(a.y, a.z);
+  //std::swap(a.y, a.z);
   std::swap(a.x, a.z);
 }
 

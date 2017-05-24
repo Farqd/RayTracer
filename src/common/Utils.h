@@ -43,6 +43,8 @@ Vector normalize(Vector const& vec);
 
 float distance(Point const& a, Point const& b);
 
+Vector getNormalVector(Triangle const& triangle);
+
 template <typename T>
 bool pointInShadow(Point const& point, Point const& light, T const& object)
 {
@@ -71,6 +73,8 @@ std::pair<bool, Point> intersection(Segment const& segment, Plane const& plane);
 Segment reflection(Segment const& segment, Sphere const& sphere);
 
 Segment reflection(Segment const& segment, Plane const& plane);
+
+Segment randomReflection(Segment const& segment, Plane const& plane);
 
 Segment reflection(Segment const& segment, Triangle const& triangle);
 

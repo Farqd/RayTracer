@@ -279,7 +279,7 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
 void swapVertex(Vector& a)
 {
   // teapot
-  //std::swap(a.y, a.z);
+  // std::swap(a.y, a.z);
   std::swap(a.x, a.z);
 }
 

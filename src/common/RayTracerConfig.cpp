@@ -247,7 +247,7 @@ RayTracerConfig RayTracerConfig::fromPlyFile(std::string const& path)
         else
           colors.push_back({100, 100, 100});
 
-        std::string sss; for(int j=0; j<11; j++) file >> sss;
+        //std::string sss; for(int j=0; j<11; j++) file >> sss;
       }
 
       for (int i = 0; i < faceCount; ++i)
@@ -285,8 +285,8 @@ void swapVertex(Vector& a)
   // teapot
   std::swap(a.y, a.z);
   std::swap(a.x, a.z);
-  std::swap(a.y, a.z);
-  std::swap(a.x, a.y);
+  //std::swap(a.y, a.z);
+  //std::swap(a.x, a.y);
 }
 
 void RayTracerConfig::scaleTriangles()
@@ -302,8 +302,8 @@ void RayTracerConfig::scaleTriangles()
     t.z.x = -t.z.x;
   }
 
-  float expectedSize = 35000.f;
-  float expectedDist = -12000.f;
+  float expectedSize = 3500.f;
+  float expectedDist = 2000.f;
   float expectedY = 0.f;
   float expectedZ = 0.f;
 

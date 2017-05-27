@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <vector>
 
-KdNode* KdNode::build(std::vector<Triangle>& triangles, int depth)
+KdNode* KdNode::build(std::vector<Triangle>& triangles, std::vector<float> &ranges, int depth)
 {
   if (triangles.size() == 0)
     return nullptr;
@@ -13,30 +13,7 @@ KdNode* KdNode::build(std::vector<Triangle>& triangles, int depth)
 
   KdNode* node = new KdNode();
 
-  node->bb.vMin.x = std::numeric_limits<float>::max();
-  node->bb.vMin.y = std::numeric_limits<float>::max();
-  node->bb.vMin.z = std::numeric_limits<float>::max();
-
-  node->bb.vMax.x = std::numeric_limits<float>::min();
-  node->bb.vMax.y = std::numeric_limits<float>::min();
-  node->bb.vMax.z = std::numeric_limits<float>::min();
-
-
-  for (auto const& triangle : triangles)
-  {
-    Point const& minP = getMinPoint(triangle);
-    Point const& maxP = getMaxPoint(triangle);
-
-    node->bb.vMin.x = std::min(node->bb.vMin.x, minP.x);
-    node->bb.vMin.y = std::min(node->bb.vMin.y, minP.y);
-    node->bb.vMin.z = std::min(node->bb.vMin.z, minP.z);
-
-    node->bb.vMax.x = std::max(node->bb.vMax.x, maxP.x);
-    node->bb.vMax.y = std::max(node->bb.vMax.y, maxP.y);
-    node->bb.vMax.z = std::max(node->bb.vMax.z, maxP.z);
-  }
-
-  if (triangles.size() < 10)
+  if (triangles.size() < 10 || depth > 20)
   {
     node->triangles = triangles;
     return node;
@@ -47,73 +24,49 @@ KdNode* KdNode::build(std::vector<Triangle>& triangles, int depth)
 
   int axis = depth % 3;
 
-  float midValue;
-  switch (axis)
-  {
-    case 0:
-      midValue = (node->bb.vMax.x + node->bb.vMin.x) / 2;
-      break;
-    case 1:
-      midValue = (node->bb.vMax.y + node->bb.vMin.y) / 2;
-      break;
-    case 2:
-      midValue = (node->bb.vMax.z + node->bb.vMin.z) / 2;
-      break;
-  }
-
+  float midValue = (ranges[axis*2] + ranges[axis*2+1]) / 2;
   for (auto const& triangle : triangles)
   {
     switch (axis)
     {
       case 0:
-        getMinPoint(triangle).x < midValue ? leftTrs.push_back(triangle)
-                                           : rightTrs.push_back(triangle);
+        if(getMinPoint(triangle).x <= midValue)
+            leftTrs.push_back(triangle);
+        if(getMaxPoint(triangle).x > midValue)
+            rightTrs.push_back(triangle);
         break;
       case 1:
-        getMinPoint(triangle).y < midValue ? leftTrs.push_back(triangle)
-                                           : rightTrs.push_back(triangle);
+        if(getMinPoint(triangle).y <= midValue)
+            leftTrs.push_back(triangle);
+        if(getMaxPoint(triangle).y > midValue)
+            rightTrs.push_back(triangle);
         break;
       case 2:
-        getMinPoint(triangle).z < midValue ? leftTrs.push_back(triangle)
-                                           : rightTrs.push_back(triangle);
+        if(getMinPoint(triangle).z <= midValue)
+            leftTrs.push_back(triangle);
+        if(getMaxPoint(triangle).z > midValue)
+            rightTrs.push_back(triangle);
         break;
     }
   }
 
-  if (leftTrs.empty() || rightTrs.empty())
-  {
-    switch (axis)
-    {
-      case 0:
-        std::sort(triangles.begin(), triangles.end(), [](auto const& t1, auto const& t2) {
-          return getMinPoint(t1).x < getMinPoint(t2).x;
-        });
-        break;
-      case 1:
-        std::sort(triangles.begin(), triangles.end(), [](auto const& t1, auto const& t2) {
-          return getMinPoint(t1).y < getMinPoint(t2).y;
-        });
-        break;
-      case 2:
-        std::sort(triangles.begin(), triangles.end(), [](auto const& t1, auto const& t2) {
-          return getMinPoint(t1).z < getMinPoint(t2).z;
-        });
-        break;
-    }
-    auto mid = triangles.begin() + triangles.size() / 2;
-    leftTrs.clear();
-    rightTrs.clear();
-    leftTrs.insert(leftTrs.end(), triangles.begin(), mid);
-    rightTrs.insert(rightTrs.end(), mid, triangles.end());
-  }
-  node->left = KdNode::build(leftTrs, depth + 1);
-  node->right = KdNode::build(rightTrs, depth + 1);
+  node->plane = midValue;
+
+  float tmp = ranges[axis*2];
+  ranges[axis*2] = midValue;
+  node->right = KdNode::build(rightTrs, ranges, depth+1);
+  ranges[axis*2] = tmp;
+  tmp = ranges[axis*2+1];
+  ranges[axis*2+1] = midValue;
+  node->left = KdNode::build(leftTrs, ranges, depth+1);
+  ranges[axis*2+1] = tmp;
 
   return node;
 }
 
-FindResult KdNode::findInTriangles(Segment seg, Triangle const& excludedTriangle)
+FindResult KdNode::findInTriangles(Segment seg, Triangle const& excludedTriangle, float t_enter, float t_exit)
 {
+  //std::cerr<<"A"<<std::endl;
   FindResult res{};
 
   float currDist = std::numeric_limits<float>::max();
@@ -122,13 +75,13 @@ FindResult KdNode::findInTriangles(Segment seg, Triangle const& excludedTriangle
   {
     if (triangle == excludedTriangle)
       continue;
-    std::pair<bool, Point> const& intersec = intersection(seg, triangle);
+    IntersecRes const& intersec = intersectionT(seg, triangle);
 
-    if (intersec.first && distance(seg.a, intersec.second) < currDist)
+    if (intersec.exists && intersec.t < currDist)// && intersec.t >= t_enter && intersec.t <= t_exit)
     {
-      currDist = distance(seg.a, intersec.second);
+      currDist = intersec.t;
       res.exists = true;
-      res.point = intersec.second;
+      res.point = intersec.point;
       res.triangle = triangle;
     }
   }
@@ -136,38 +89,90 @@ FindResult KdNode::findInTriangles(Segment seg, Triangle const& excludedTriangle
   return res;
 }
 
-FindResult KdNode::findRecursive(Segment seg, Triangle const& excludedTriangle)
+FindResult KdNode::findRecursive(Segment seg, Triangle const& excludedTriangle, int depth, float t_enter, float t_exit)
 {
-  FindResult const& resL = left ? left->find(seg, excludedTriangle) : FindResult{};
-  FindResult const& resR = right ? right->find(seg, excludedTriangle) : FindResult{};
+  int axis = depth%3;
+  Vector V = seg.b - seg.a;
+  Vector normal{0, 0, 0};
+  float vAxis;
 
-  FindResult res{};
-  if (!resL.exists && !resR.exists)
-    return res;
-
-  if (resL.exists)
-    res = resL;
-
-  if (resR.exists)
+  switch(axis)
   {
-    if (!res.exists || (distance(seg.a, resR.point) < distance(seg.a, res.point)))
-      res = resR;
+    case 0:
+      normal.x = 1;
+      vAxis = V.x;
+      break;
+    case 1:
+      normal.y = 1;
+      vAxis = V.y;
+      break;
+    case 2:
+      normal.z = 1;
+      vAxis = V.z;
+      break;
   }
 
-  return res;
+  float x = dotProduct(V, normal);
+  if (x == 0)
+  {
+    float axisVal;
+    switch(axis)
+    {
+      case 0:
+        axisVal = seg.a.x;
+        break;
+      case 1:
+        axisVal = seg.a.y;
+        break;
+      case 2:
+        axisVal = seg.a.z;
+        break;
+    }
+  //std::cerr << " chuj"<<std::endl;
+   if(axisVal <= plane)
+      return left ? left->find(seg, excludedTriangle, depth+1, t_enter, t_exit) : FindResult{};
+   else
+      return right ? right->find(seg, excludedTriangle, depth+1, t_enter, t_exit) : FindResult{};
+  }
+
+  float t = -(dotProduct(seg.a, normal) - plane) / x;
+  //std::cerr << t <<" " << plane << std::endl;
+  
+  if(t < 0)
+    return {};
+  
+  if(t < t_enter)
+  {
+    if(vAxis < 0)
+      return left ? left->find(seg, excludedTriangle, depth+1, t_enter, t_exit) : FindResult{};
+    else
+      return right ? right->find(seg, excludedTriangle, depth+1, t_enter, t_exit) : FindResult{};
+  }
+
+  // for sure t < t_exit
+  if(vAxis < 0)
+  {
+    FindResult const& resR = right ? right->find(seg, excludedTriangle, depth+1, t_enter, t) : FindResult{};
+    if(resR.exists)
+      return resR;
+    return left ? left->find(seg, excludedTriangle, depth+1, t, t_exit) : FindResult{};
+    
+  }
+  else
+  {
+    FindResult const& resL = left ? left->find(seg, excludedTriangle, depth+1, t_enter, t) : FindResult{};
+    if(resL.exists)
+      return resL;
+    return right ? right->find(seg, excludedTriangle, depth+1, t, t_exit) : FindResult{};
+  }
 }
 
-FindResult KdNode::find(Segment seg, Triangle const& excludedTriangle)
+FindResult KdNode::find(Segment seg, Triangle const& excludedTriangle, int depth, float t_enter, float t_exit)
 {
-  FindResult res{};
-
-  if (!intersection(seg, bb))
-    return res;
-
   if (triangles.empty())
-    return findRecursive(seg, excludedTriangle);
+    return findRecursive(seg, excludedTriangle, depth, t_enter, t_exit);
   else
-    return findInTriangles(seg, excludedTriangle);
+    return findInTriangles(seg, excludedTriangle, t_enter, t_exit);
 }
 
 KdNode::~KdNode()

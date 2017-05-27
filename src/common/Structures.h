@@ -25,6 +25,13 @@ struct Point
   }
 };
 
+struct IntersecRes
+{
+  bool exists;
+  Point point;
+  float t;
+};
+
 using Vector = Point;
 
 struct Sphere

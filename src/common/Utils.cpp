@@ -187,6 +187,43 @@ std::pair<bool, Point> intersection(Segment const& segment, Triangle const& tria
   return {false, {}};
 }
 
+IntersecRes intersectionT(Segment const& segment, Triangle const& triangle)
+{
+  Vector const D = normalize(segment.b - segment.a);
+
+  Vector e1 = triangle.y - triangle.x;
+  Vector e2 = triangle.z - triangle.x;
+
+  Vector P = crossProduct(D, e2);
+  float det = dotProduct(e1, P);
+
+  if (isCloseToZero(det))
+    return {false, {}};
+
+  float inv_det = 1.f / det;
+  Vector T = segment.a - triangle.x;
+  float u = dotProduct(T, P) * inv_det;
+  if (u < 0.f || u > 1.f)
+    return {false, {}};
+
+  Vector Q = crossProduct(T, e1);
+  float v = dotProduct(D, Q) * inv_det;
+
+  if (v < 0.f || u + v > 1.f)
+    return {false, {}};
+
+  float t = dotProduct(e2, Q) * inv_det;
+  if (t > 0)
+  {
+    Point res = segment.a + D * t;
+    return {true, res, t};
+  }
+
+  return {false, {}};
+}
+
+
+
 /*
 std::pair<bool, Point> intersection(Segment const &segment, Triangle const &triangle) {
   Point orig = segment.a;

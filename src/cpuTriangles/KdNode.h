@@ -15,20 +15,20 @@ struct FindResult
 class KdNode
 {
 private:
-  FindResult findRecursive(Segment seg, Triangle const& excludedTriangle);
-  FindResult findInTriangles(Segment seg, Triangle const& excludedTriangle);
+  FindResult findRecursive(Segment seg, Triangle const& excludedTriangle, int depth, float t_enter, float t_exit);
+  FindResult findInTriangles(Segment seg, Triangle const& excludedTriangle, float t_enter, float t_exit);
 
 public:
-  BoundingBox bb;
+  float plane;
   KdNode* left = nullptr;
   KdNode* right = nullptr;
 
   // Consider changing to Triangle*
   std::vector<Triangle> triangles;
 
-  FindResult find(Segment seg, Triangle const& excludedTriangle);
+  FindResult find(Segment seg, Triangle const& excludedTriangle, int depth, float t_enter, float t_exit);
 
-  static KdNode* build(std::vector<Triangle>& triangles, int depth = 0);
+  static KdNode* build(std::vector<Triangle>& triangles, std::vector<float>& ranges, int depth = 0);
 
   ~KdNode();
 };

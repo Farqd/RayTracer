@@ -18,7 +18,7 @@ struct SplitNode
   // > 0 - SplitNode, < 0 - LeafNode, points to position + 1
   int leftChild;
   int rightChild;
-  BoundingBox bb;
+  float plane;
 };
 
 struct KdTreeData

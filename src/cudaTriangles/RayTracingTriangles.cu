@@ -21,7 +21,7 @@ struct FindTriangleResult
 struct Stack
 {
   size_t size = 0;
-  int data[30];
+  int data[22];
 
   __device__ void push(int const& t)
   {
@@ -37,11 +37,11 @@ struct Stack
 extern "C" {
 
 __device__ FindTriangleResult findTriangleLeafNode(
-    int leafIdx, Segment const& ray, int excludedTriangle, KdTreeData const& treeData)
+    int leafIdx, Segment const& ray, int excludedTriangle, KdTreeData const& treeData, int depth, float t_enter, float t_exit)
 {
   FindTriangleResult res{};
 
-  res.dist = FLT_MAX;
+  float currDist = FLT_MAX;
 
   LeafNode const leafNode = treeData.leafNodes[-leafIdx - 1];
 
@@ -49,14 +49,13 @@ __device__ FindTriangleResult findTriangleLeafNode(
   {
     if (i == excludedTriangle)
       continue;
-    IntersectionResult const intersec = intersection(ray, treeData.triangles[i]);
+    IntersecRes const intersec = intersectionT(ray, treeData.triangles[i]);
 
-    float dist = distance(ray.a, intersec.intersectionPoint);
-    if (intersec.intersects && dist < res.dist)
+    if (intersec.exists && intersec.t < currDist && intersec.t >= t_enter && intersec.t <= t_exit)
     {
-      res.dist = dist;
+      currDist = intersec.t;
       res.exists = true;
-      res.point = intersec.intersectionPoint;
+      res.point = intersec.point;
       res.triangle = i;
     }
   }
@@ -65,7 +64,140 @@ __device__ FindTriangleResult findTriangleLeafNode(
 }
 
 __device__ FindTriangleResult findTriangleSplitNode(
-    int nodeIdx, Segment const& ray, int excludedTriangle, KdTreeData const& treeData)
+    int nodeIdx, Segment const& ray, int excludedTriangle, KdTreeData const& treeData, int depth, float t_enter, float t_exit)
+{
+
+  SplitNode node = treeData.splitNodes[nodeIdx - 1];
+  int axis = depth%3;
+  Vector V = normalize(ray.b - ray.a);
+  Vector normal{0, 0, 0};
+  float vAxis;
+
+  switch (axis)
+  {
+    case 0:
+      normal.x = 1;
+      vAxis = V.x;
+      break;
+    case 1:
+      normal.y = 1;
+      vAxis = V.y;
+      break;
+    case 2:
+      normal.z = 1;
+      vAxis = V.z;
+      break;    
+  }
+
+  float x = dotProduct(V, normal);
+  if (isCloseToZero(x))
+  {
+    float axisVal;
+    switch(axis)
+    {
+      case 0:
+        axisVal = ray.a.x;
+        break;
+      case 1:
+        axisVal = ray.a.y;
+        break;    
+      case 2:
+        axisVal = ray.a.z;
+        break;
+    }
+    if (axisVal<=node.plane)
+    {
+      if (node.leftChild<0) return findTriangleLeafNode(node.leftChild, ray, excludedTriangle, treeData, depth+1, t_enter, t_exit);
+      if (node.leftChild>0) return findTriangleSplitNode(node.leftChild, ray, excludedTriangle, treeData, depth+1, t_enter, t_exit);
+      return FindTriangleResult{};
+    }
+    else
+    {
+      if (node.rightChild<0) return findTriangleLeafNode(node.rightChild, ray, excludedTriangle, treeData, depth+1, t_enter, t_exit);
+      if (node.rightChild>0) return findTriangleSplitNode(node.rightChild, ray, excludedTriangle, treeData, depth+1, t_enter, t_exit);
+      return FindTriangleResult{};
+    }
+  }    
+  float t = -(dotProduct(ray.a, normal) - node.plane) / x;
+
+  if (t<0)
+  {
+    if (vAxis<0)
+    {
+      if (node.leftChild<0) return findTriangleLeafNode(node.leftChild, ray, excludedTriangle, treeData, depth+1, t_enter, t_exit);
+      if (node.leftChild>0) return findTriangleSplitNode(node.leftChild, ray, excludedTriangle, treeData, depth+1, t_enter, t_exit);
+      return FindTriangleResult{};
+    }
+    else
+    {
+      if (node.rightChild<0) return findTriangleLeafNode(node.rightChild, ray, excludedTriangle, treeData, depth+1, t_enter, t_exit);
+      if (node.rightChild>0) return findTriangleSplitNode(node.rightChild, ray, excludedTriangle, treeData, depth+1, t_enter, t_exit);
+      return FindTriangleResult{};
+    }
+  }
+
+  if (t < t_enter)
+  {
+    if (vAxis<0)
+    {
+      if (node.leftChild<0) return findTriangleLeafNode(node.leftChild, ray, excludedTriangle, treeData, depth+1, t_enter, t_exit);
+      if (node.leftChild>0) return findTriangleSplitNode(node.leftChild, ray, excludedTriangle, treeData, depth+1, t_enter, t_exit);
+      return FindTriangleResult{};
+    }
+    else
+    {
+      if (node.rightChild<0) return findTriangleLeafNode(node.rightChild, ray, excludedTriangle, treeData, depth+1, t_enter, t_exit);
+      if (node.rightChild>0) return findTriangleSplitNode(node.rightChild, ray, excludedTriangle, treeData, depth+1, t_enter, t_exit);
+      return FindTriangleResult{};
+    }
+
+  }
+  if (t > t_exit)
+  {
+    if (vAxis>0)
+    {
+      if (node.leftChild<0) return findTriangleLeafNode(node.leftChild, ray, excludedTriangle, treeData, depth+1, t_enter, t_exit);
+      if (node.leftChild>0) return findTriangleSplitNode(node.leftChild, ray, excludedTriangle, treeData, depth+1, t_enter, t_exit);
+      return FindTriangleResult{};
+    }
+    else
+    {
+      if (node.rightChild<0) return findTriangleLeafNode(node.rightChild, ray, excludedTriangle, treeData, depth+1, t_enter, t_exit);
+      if (node.rightChild>0) return findTriangleSplitNode(node.rightChild, ray, excludedTriangle, treeData, depth+1, t_enter, t_exit);
+      return FindTriangleResult{};
+    }
+  }
+  if (vAxis < 0)
+  {
+    FindTriangleResult resR{};
+    if (node.rightChild<0) resR = findTriangleLeafNode(node.rightChild, ray, excludedTriangle, treeData, depth+1, t_enter, t);
+    if (node.rightChild>0) resR = findTriangleSplitNode(node.rightChild, ray, excludedTriangle, treeData, depth+1, t_enter, t);
+    if (resR.exists) return resR;
+
+    if (node.leftChild<0) return findTriangleLeafNode(node.leftChild, ray, excludedTriangle, treeData, depth+1, t, t_exit);
+    if (node.leftChild>0) return findTriangleSplitNode(node.leftChild, ray, excludedTriangle, treeData, depth+1, t, t_exit);
+
+    return FindTriangleResult{};
+  }
+
+  else
+  {
+    FindTriangleResult resL{};
+    if (node.leftChild<0) resL = findTriangleLeafNode(node.leftChild, ray, excludedTriangle, treeData, depth+1, t_enter, t);
+    if (node.leftChild>0) resL = findTriangleSplitNode(node.leftChild, ray, excludedTriangle, treeData, depth+1, t_enter, t);
+    if (resL.exists) return resL;
+
+    if (node.rightChild<0) return findTriangleLeafNode(node.rightChild, ray, excludedTriangle, treeData, depth+1, t, t_exit);
+    if (node.rightChild>0) return findTriangleSplitNode(node.rightChild, ray, excludedTriangle, treeData, depth+1, t, t_exit);
+
+    return FindTriangleResult{};
+  }
+  
+
+}
+
+/*__device__ FindTriangleResult findTriangleSplitNode(
+    int nodeIdx, Segment const& ray, int excludedTriangle, KdTreeData const& treeData, float t_enter, float t_exit)
 {
   FindTriangleResult res{};
   res.dist = FLT_MAX;
@@ -91,7 +223,7 @@ __device__ FindTriangleResult findTriangleSplitNode(
     else if (idxR > 0)
     {
       SplitNode const& rightSplit = treeData.splitNodes[idxR - 1];
-      if (intersectsBoundingBox(ray, rightSplit.bb))
+      if (intersectsBoundingBoxN(ray, rightSplit.bb))
         stack.push(idxR);
     }
 
@@ -105,12 +237,12 @@ __device__ FindTriangleResult findTriangleSplitNode(
     else if (idxL > 0)
     {
       SplitNode const& leftSplit = treeData.splitNodes[idxL - 1];
-      if (intersectsBoundingBox(ray, leftSplit.bb))
+      if (intersectsBoundingBoxN(ray, leftSplit.bb))
         stack.push(idxL);
     }
   }
 }
-
+*/
 __device__ RGB processPixelOnBackground(BaseConfig const& config)
 {
   return config.background;
@@ -118,12 +250,13 @@ __device__ RGB processPixelOnBackground(BaseConfig const& config)
 
 __device__ bool pointInShadow(Point const& pointOnTriangle, int excludedTriangle, KdTreeData const& treeData, BaseConfig const& config)
 {
-  Segment ray = {pointOnTriangle, config.light};
+  Vector dir = normalize(config.light - pointOnTriangle);
+  Segment ray = {pointOnTriangle, pointOnTriangle+dir};
   FindTriangleResult res;
   if (treeData.treeRoot < 0)
-    res = findTriangleLeafNode(treeData.treeRoot, ray, excludedTriangle, treeData);
+    res = findTriangleLeafNode(treeData.treeRoot, ray, excludedTriangle, treeData, 0, FLT_MIN, FLT_MAX);
   else // if (treeData.treeRoot > 0)
-    res = findTriangleSplitNode(treeData.treeRoot, ray, excludedTriangle, treeData);
+    res = findTriangleSplitNode(treeData.treeRoot, ray, excludedTriangle, treeData, 0, FLT_MIN, FLT_MAX);
 
   return res.exists && distance(pointOnTriangle, res.point) < distance(pointOnTriangle, config.light);
 }
@@ -142,13 +275,15 @@ __device__  RGB calculateColorInLight(Point const& pointOnTriangle, Triangle con
 }
 
 __device__ RGB
-processPixel(Segment const& ray, KdTreeData const& treeData, BaseConfig const& config, int recursionLevel = 0)
+processPixel(Segment const& seg, KdTreeData const& treeData, BaseConfig const& config, int recursionLevel = 0)
 {
+  Vector dir = normalize(seg.b - seg.a);
+  Segment ray = {seg.a, seg.a+dir};
   FindTriangleResult triangleIntersec;
   if (treeData.treeRoot < 0)
-    triangleIntersec = findTriangleLeafNode(treeData.treeRoot, ray, -1, treeData);
+    triangleIntersec = findTriangleLeafNode(treeData.treeRoot, ray, -1, treeData, 0, FLT_MIN, FLT_MAX);
   else // if (treeData.treeRoot > 0)
-    triangleIntersec = findTriangleSplitNode(treeData.treeRoot, ray, -1, treeData);
+    triangleIntersec = findTriangleSplitNode(treeData.treeRoot, ray, -1, treeData, 0, FLT_MIN, FLT_MAX);
 
   if (!triangleIntersec.exists)
     return processPixelOnBackground(config);

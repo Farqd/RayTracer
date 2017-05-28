@@ -65,59 +65,65 @@ static bool goesLeft(Triangle const& triangle, int const axis, float const split
   return false;
 }
 
-int KdTreeBuilder::build(std::vector<Triangle>& triangles, int depth)
+int KdTreeBuilder::build(std::vector<Triangle>& triangles, float* ranges, int depth)
 {
   if (triangles.size() == 0)
     return 0; // valid index is either negative or positive, see SplitNode
 
-  if (triangles.size() < trianglesInLeafBound)
+  if (triangles.size() < trianglesInLeafBound || depth>20)
     return addLeaf(triangles);
 
   int const axis = depth % 3;
-  BoundingBox const bb = getBoundBoxForTriangles(triangles);
+  
 
-  float const splitValue = getSplitValue(bb, axis);
+  float const midValue = (ranges[axis*2]+ranges[axis*2+1]) / 2;
 
   std::vector<Triangle> leftTrs;
   std::vector<Triangle> rightTrs;
 
   for (auto const& triangle : triangles)
-    goesLeft(triangle, axis, splitValue) ? leftTrs.push_back(triangle)
-                                         : rightTrs.push_back(triangle);
-
-  if (leftTrs.empty() || rightTrs.empty())
   {
-    switch (axis)
-    {
-      case 0:
-        std::sort(triangles.begin(), triangles.end(), [](auto const& t1, auto const& t2) {
-          return getMinPoint(t1).x < getMinPoint(t2).x;
-        });
-        break;
-      case 1:
-        std::sort(triangles.begin(), triangles.end(), [](auto const& t1, auto const& t2) {
-          return getMinPoint(t1).y < getMinPoint(t2).y;
-        });
-        break;
-      case 2:
-        std::sort(triangles.begin(), triangles.end(), [](auto const& t1, auto const& t2) {
-          return getMinPoint(t1).z < getMinPoint(t2).z;
-        });
-        break;
-    }
-    auto mid = triangles.begin() + triangles.size() / 2;
-    leftTrs.clear();
-    rightTrs.clear();
-    leftTrs.insert(leftTrs.end(), triangles.begin(), mid);
-    rightTrs.insert(rightTrs.end(), mid, triangles.end());
+      switch (axis)
+      {
+        case 0:
+          if (getMinPoint(triangle).x <= midValue)
+            leftTrs.push_back(triangle);
+          if (getMaxPoint(triangle).x > midValue)
+            rightTrs.push_back(triangle);
+          break;
+        case 1:
+          if (getMinPoint(triangle).y <= midValue)
+            leftTrs.push_back(triangle);
+          if (getMaxPoint(triangle).y > midValue)
+            rightTrs.push_back(triangle);
+          break;
+        case 2:
+          if (getMinPoint(triangle).z <= midValue)
+            leftTrs.push_back(triangle);
+          if (getMaxPoint(triangle).z > midValue)
+            rightTrs.push_back(triangle);
+          break;
+
+      }
   }
+    
 
   splitNodes.emplace_back();
   int const nodeIdx = static_cast<int>(splitNodes.size()) - 1;
 
-  splitNodes[nodeIdx].bb = bb;
-  int left = build(leftTrs, depth + 1);
-  int right = build(rightTrs, depth + 1);
+  splitNodes[nodeIdx].plane = midValue;
+
+  float tmp = ranges[axis*2];
+  ranges[axis*2] = midValue;
+
+  int right = build(rightTrs, ranges, depth + 1);
+
+  ranges[axis*2] = tmp;
+  tmp = ranges[axis*2+1];
+  ranges[axis*2+1] = midValue;
+
+  int left = build(leftTrs, ranges, depth + 1);
+  ranges[axis*2+1] = tmp;
   splitNodes[nodeIdx].leftChild = left;
   splitNodes[nodeIdx].rightChild = right;
 

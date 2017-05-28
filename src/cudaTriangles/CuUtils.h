@@ -129,6 +129,25 @@ __device__ Point normalize(Point vec)
   return vec;
 }
 
+__device__ bool intersectsBoundingBoxN(Segment const& segment, BoundingBox const& box)
+{
+  Vector dir = segment.b - segment.a;
+  float dirfracX = 1.0f / dir.x;
+  float dirfracY = 1.0f / dir.y;
+  float dirfracZ = 1.0f / dir.z;
+
+  float t1 = (box.vMin.x - segment.a.x) * dirfracX;
+  float t2 = (box.vMax.x - segment.a.x) * dirfracX;
+  float t3 = (box.vMin.y - segment.a.y) * dirfracY;
+  float t4 = (box.vMax.y - segment.a.y) * dirfracY;
+  float t5 = (box.vMin.z - segment.a.z) * dirfracZ;
+  float t6 = (box.vMax.z - segment.a.z) * dirfracZ;
+
+  float tmin = fmaxf(fmaxf(fminf(t1, t2), fminf(t3, t4)), fminf(t5, t6));
+  float tmax = fminf(fminf(fmaxf(t1, t2), fmaxf(t3, t4)), fmaxf(t5, t6));
+
+  return 0 <= tmax && tmin <= tmax;
+}
 __device__ bool intersectsBoundingBox(Segment const& segment, BoundingBox const& box)
 {
   Vector dir = normalize(segment.b - segment.a);
@@ -220,6 +239,93 @@ __device__ IntersectionResult intersection(Segment const& segment, Triangle cons
 
   Vector const& O = segment.a;
   Vector const& D = normalize(segment.b - segment.a);
+
+  Vector e1, e2;
+  Vector P, Q, T;
+  float det, inv_det, u, v;
+
+  e1 = V2 - V1;
+  e2 = V3 - V1;
+
+  P = crossProduct(D, e2);
+  det = dotProduct(e1, P);
+
+  if (isCloseToZero(det))
+    return {false, {}};
+
+  inv_det = 1.f / det;
+  T = O - V1;
+  u = dotProduct(T, P) * inv_det;
+  if (u < 0.f || u > 1.f)
+    return {false, {}};
+
+  Q = crossProduct(T, e1);
+  v = dotProduct(D, Q) * inv_det;
+
+  if (v < 0.f || u + v > 1.f)
+    return {false, {}};
+
+  float t = dotProduct(e2, Q) * inv_det;
+  if (t > FLT_EPSILON)
+  {
+    Point res = segment.a + D * t;
+    return {true, res};
+  }
+
+  return {false, {}};
+}
+__device__ IntersecRes intersectionT(Segment const& segment, Triangle const& triangle)
+{
+  Vector const& V1 = triangle.x;
+  Vector const& V2 = triangle.y;
+  Vector const& V3 = triangle.z;
+
+  Vector const& O = segment.a;
+  Vector const& D = normalize(segment.b - segment.a);
+
+  Vector e1, e2;
+  Vector P, Q, T;
+  float det, inv_det, u, v;
+
+  e1 = V2 - V1;
+  e2 = V3 - V1;
+
+  P = crossProduct(D, e2);
+  det = dotProduct(e1, P);
+
+  if (isCloseToZero(det))
+    return {false, {}};
+
+  inv_det = 1.f / det;
+  T = O - V1;
+  u = dotProduct(T, P) * inv_det;
+  if (u < 0.f || u > 1.f)
+    return {false, {}};
+
+  Q = crossProduct(T, e1);
+  v = dotProduct(D, Q) * inv_det;
+
+  if (v < 0.f || u + v > 1.f)
+    return {false, {}};
+
+  float t = dotProduct(e2, Q) * inv_det;
+  if (t > FLT_EPSILON)
+  {
+    Point res = segment.a + D * t;
+    return {true, res, t};
+  }
+
+  return {false, {}};
+}
+
+__device__ IntersectionResult intersectionN(Segment const& segment, Triangle const& triangle)
+{
+  Vector const& V1 = triangle.x;
+  Vector const& V2 = triangle.y;
+  Vector const& V3 = triangle.z;
+
+  Vector const& O = segment.a;
+  Vector const& D = segment.b - segment.a;
 
   Vector e1, e2;
   Vector P, Q, T;

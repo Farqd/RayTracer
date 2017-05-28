@@ -10,7 +10,6 @@ KdNode* KdNode::build(std::vector<Triangle>& triangles, std::vector<float> &rang
   if (triangles.size() == 0)
     return nullptr;
 
-
   KdNode* node = new KdNode();
 
   if (triangles.size() < 10 || depth > 20)
@@ -66,7 +65,6 @@ KdNode* KdNode::build(std::vector<Triangle>& triangles, std::vector<float> &rang
 
 FindResult KdNode::findInTriangles(Segment seg, Triangle const& excludedTriangle, float t_enter, float t_exit)
 {
-  //std::cerr<<"A"<<std::endl;
   FindResult res{};
 
   float currDist = std::numeric_limits<float>::max();
@@ -77,8 +75,6 @@ FindResult KdNode::findInTriangles(Segment seg, Triangle const& excludedTriangle
       continue;
     IntersecRes const& intersec = intersectionT(seg, triangle);
 
-    //if(intersec.exists && intersec.t < currDist && (intersec.t < t_enter || intersec.t > t_exit))
-    //  std::cerr << seg <<" " <<  t_enter <<" " << intersec.t <<" "<<t_exit<<std::endl;
     if (intersec.exists && intersec.t < currDist && intersec.t >= t_enter && intersec.t <= t_exit)
     {
       currDist = intersec.t;
@@ -130,28 +126,22 @@ FindResult KdNode::findRecursive(Segment seg, Triangle const& excludedTriangle, 
         axisVal = seg.a.z;
         break;
     }
-  //std::cerr << " chuj"<<std::endl;
-   if(axisVal <= plane)
+    if(axisVal <= plane)
       return left ? left->find(seg, excludedTriangle, depth+1, t_enter, t_exit) : FindResult{};
-   else
+    else
       return right ? right->find(seg, excludedTriangle, depth+1, t_enter, t_exit) : FindResult{};
   }
 
   float t = -(dotProduct(seg.a, normal) - plane) / x;
-  //std::cerr << t <<" " << plane << std::endl;
   
   if(t < 0)
   {
     // check only one side
     
     if(vAxis < 0)
-    {
       return left ? left->find(seg, excludedTriangle, depth+1, t_enter, t_exit) : FindResult{};
-    }
     else
-    {
       return right ? right->find(seg, excludedTriangle, depth+1, t_enter, t_exit) : FindResult{};
-    }
   }
   
   if(t < t_enter)
@@ -162,7 +152,15 @@ FindResult KdNode::findRecursive(Segment seg, Triangle const& excludedTriangle, 
       return right ? right->find(seg, excludedTriangle, depth+1, t_enter, t_exit) : FindResult{};
   }
 
-  // for sure t < t_exit
+  if(t > t_exit)
+  {
+    if(vAxis > 0)
+      return left ? left->find(seg, excludedTriangle, depth+1, t_enter, t_exit) : FindResult{};
+    else
+      return right ? right->find(seg, excludedTriangle, depth+1, t_enter, t_exit) : FindResult{};
+  }
+
+
   if(vAxis < 0)
   {
     FindResult const& resR = right ? right->find(seg, excludedTriangle, depth+1, t_enter, t) : FindResult{};

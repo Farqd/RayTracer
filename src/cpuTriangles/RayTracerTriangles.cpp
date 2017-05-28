@@ -39,7 +39,7 @@ RGB RayTracerTriangles::processPixelOnTriangle(Point const& rayBeg, Point const&
   if (recursionLevel >= config.maxRecursionLevel || isCloseToZero(triangle.reflectionCoefficient))
     return resultCol;
 
-  Segment refl = reflection({rayBeg, pointOnTriangle}, triangle);
+  Segment refl = randomReflection({rayBeg, pointOnTriangle}, triangle);
   RGB reflectedColor = processPixel(refl, recursionLevel + 1);
 
   return calculateColorFromReflection(resultCol, reflectedColor, triangle.reflectionCoefficient);

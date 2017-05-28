@@ -77,7 +77,9 @@ FindResult KdNode::findInTriangles(Segment seg, Triangle const& excludedTriangle
       continue;
     IntersecRes const& intersec = intersectionT(seg, triangle);
 
-    if (intersec.exists && intersec.t < currDist)// && intersec.t >= t_enter && intersec.t <= t_exit)
+    //if(intersec.exists && intersec.t < currDist && (intersec.t < t_enter || intersec.t > t_exit))
+    //  std::cerr << seg <<" " <<  t_enter <<" " << intersec.t <<" "<<t_exit<<std::endl;
+    if (intersec.exists && intersec.t < currDist && intersec.t >= t_enter && intersec.t <= t_exit)
     {
       currDist = intersec.t;
       res.exists = true;
@@ -92,7 +94,7 @@ FindResult KdNode::findInTriangles(Segment seg, Triangle const& excludedTriangle
 FindResult KdNode::findRecursive(Segment seg, Triangle const& excludedTriangle, int depth, float t_enter, float t_exit)
 {
   int axis = depth%3;
-  Vector V = seg.b - seg.a;
+  Vector V = normalize(seg.b - seg.a);
   Vector normal{0, 0, 0};
   float vAxis;
 
@@ -113,7 +115,7 @@ FindResult KdNode::findRecursive(Segment seg, Triangle const& excludedTriangle, 
   }
 
   float x = dotProduct(V, normal);
-  if (x == 0)
+  if (isCloseToZero(x))
   {
     float axisVal;
     switch(axis)
@@ -139,7 +141,18 @@ FindResult KdNode::findRecursive(Segment seg, Triangle const& excludedTriangle, 
   //std::cerr << t <<" " << plane << std::endl;
   
   if(t < 0)
-    return {};
+  {
+    // check only one side
+    
+    if(vAxis < 0)
+    {
+      return left ? left->find(seg, excludedTriangle, depth+1, t_enter, t_exit) : FindResult{};
+    }
+    else
+    {
+      return right ? right->find(seg, excludedTriangle, depth+1, t_enter, t_exit) : FindResult{};
+    }
+  }
   
   if(t < t_enter)
   {

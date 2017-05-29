@@ -100,13 +100,12 @@ __device__ FindTriangleResult search(Segment const& ray, int excludedTriangle, K
   tMin = fmaxf(fmaxf(fminf(t1, t2), fminf(t3, t4)), fminf(t5, t6));
   tMax = fminf(fminf(fmaxf(t1, t2), fmaxf(t3, t4)), fmaxf(t5, t6));
   if (tMin > tMax || 0 > tMax) return FindTriangleResult{};
-  bool foundLeaf = true;
   float t_enter = tMin;
   float t_exit = tMax;
-  int i=0;
-  while (foundLeaf && i<2500)
-  {  ++i;
-    foundLeaf = false;   
+  
+  while (true)
+  {
+      
     int currNode = treeData.treeRoot;
     int depth = 0;
     while (currNode>0)
@@ -183,7 +182,7 @@ __device__ FindTriangleResult search(Segment const& ray, int excludedTriangle, K
     }
   }
 
-  if (t < t_enter)
+  if (t <= t_enter)
   {
     if (vAxis<0)
     {
@@ -241,7 +240,7 @@ __device__ FindTriangleResult search(Segment const& ray, int excludedTriangle, K
       if (isCloseToZero(t_exit - tMax)) return FindTriangleResult{};
       t_enter = t_exit;
       t_exit = tMax;
-      foundLeaf = true;
+     
     }
   }
   return FindTriangleResult{};
@@ -598,13 +597,13 @@ __device__ bool pointInShadow(Point const& pointOnTriangle, int excludedTriangle
   Vector dir = normalize(config.light - pointOnTriangle);
   Segment ray = {pointOnTriangle, pointOnTriangle+dir};
   FindTriangleResult res;
-//  res = search(ray, excludedTriangle, treeData);
+  res = search(ray, excludedTriangle, treeData);
 
-  if (treeData.treeRoot < 0)
+/*  if (treeData.treeRoot < 0)
     res = findTriangleLeafNode(treeData.treeRoot, ray, excludedTriangle, treeData, 0, 0.0, FLT_MAX);
   else // if (treeData.treeRoot > 0)
     res = findTriangle(treeData.treeRoot, ray, excludedTriangle, treeData, 0, 0.0, FLT_MAX);
-
+*/
   return res.exists && distance(pointOnTriangle, res.point) < distance(pointOnTriangle, config.light);
 }
 
@@ -627,12 +626,12 @@ processPixel(Segment const& seg, KdTreeData const& treeData, BaseConfig const& c
   Vector dir = normalize(seg.b - seg.a);
   Segment ray = {seg.a, seg.a+dir};
   FindTriangleResult triangleIntersec;
-//  triangleIntersec = search(ray, -1, treeData);
-  if (treeData.treeRoot < 0)
+  triangleIntersec = search(ray, -1, treeData);
+/*  if (treeData.treeRoot < 0)
     triangleIntersec = findTriangleLeafNode(treeData.treeRoot, ray, -1, treeData, 0, 0.0, FLT_MAX);
   else // if (treeData.treeRoot > 0)
     triangleIntersec = findTriangle(treeData.treeRoot, ray, -1, treeData, 0, 0.0, FLT_MAX);
-  
+ */ 
   if (!triangleIntersec.exists)
     return processPixelOnBackground(config);
 

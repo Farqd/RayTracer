@@ -44,7 +44,7 @@ void RayTracerCudaTriangles::processPixelsCuda()
   cuInit(0);
 
   CUdevice cuDevice;
-  CU_CHECK(cuDeviceGet(&cuDevice, 1));
+  CU_CHECK(cuDeviceGet(&cuDevice, 0));
 
   CUcontext cuContext;
   CU_CHECK(cuCtxCreate(&cuContext, 0, cuDevice));
@@ -67,6 +67,32 @@ void RayTracerCudaTriangles::processPixelsCuda()
   int root = treeBuilder.build(config.triangles);
   assert(root != 0);
 
+
+  //std::cerr << "Tree built\n";
+    float ranges[6];
+    if (config.triangles.size() > 0)
+    {
+      ranges[0] = config.triangles[0].x.x;
+      ranges[1] = config.triangles[0].x.x;
+      ranges[2] = config.triangles[0].x.y;
+      ranges[3] = config.triangles[0].x.y;
+      ranges[4] = config.triangles[0].x.z;
+      ranges[5] = config.triangles[0].x.z;
+    }
+    for (Triangle const& triangle : config.triangles)
+    {
+      Point pMin = getMinPoint(triangle);
+      Point pMax = getMaxPoint(triangle);
+      
+      ranges[0] = std::min(ranges[0], pMin.x);
+      ranges[1] = std::max(ranges[1], pMax.x);
+      ranges[2] = std::min(ranges[2], pMin.y);
+      ranges[3] = std::max(ranges[3], pMax.y);
+      ranges[4] = std::min(ranges[4], pMin.z);
+      ranges[5] = std::max(ranges[5], pMax.z);
+    }
+
+ 
   RGB* bitmapTab = bitmap.data();
   CUdeviceptr bitmapDev;
   CU_CHECK(cuMemAlloc(&bitmapDev, sizeof(RGB) * (bitmap.size())));
@@ -88,12 +114,14 @@ void RayTracerCudaTriangles::processPixelsCuda()
   baseConfig.imageZ = bitmap.cols / 2;
 
   void* args[] = {&bitmapDev,    &baseConfig,   &root,          &trianglesNum, &trianglesDev,
-                  &leafNodesNum, &leafNodesDev, &splitNodesNum, &splitNodesDev};
+                  &leafNodesNum, &leafNodesDev, &splitNodesNum, &splitNodesDev, &ranges[0], &ranges[1], &ranges[2], &ranges[3], &ranges[4], &ranges[5]};
 
   int threadsX = 32;
   int threadsY = 16;
   int blocksX = (bitmap.rows + threadsX - 1) / threadsX;
   int blocksY = (bitmap.cols + threadsY - 1) / threadsY;
+
+//std::cerr<<"Launching kernels\n";
 
   CU_CHECK(cuLaunchKernel(computePixel, blocksX, blocksY, 1, threadsX, threadsY, 1, 0, 0, args, 0));
 

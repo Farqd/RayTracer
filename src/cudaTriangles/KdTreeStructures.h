@@ -33,6 +33,13 @@ struct KdTreeData
 
   int splitNodesNum;
   SplitNode* splitNodes;
+
+  float p0;
+  float p1;
+  float p2;
+  float p3;
+  float p4;
+  float p5;
 };
 
 #endif // CUDA_TRIANGLES_KDTREESTRUCTURES_H

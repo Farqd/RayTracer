@@ -67,8 +67,8 @@ static bool goesLeft(Triangle const& triangle, int const axis, float const split
 
 int KdTreeBuilder::build(std::vector<Triangle>& triangles, float* ranges, int depth)
 {
-  if (triangles.size() == 0)
-    return 0; // valid index is either negative or positive, see SplitNode
+ // if (triangles.size() == 0)
+ //   return 0; // valid index is either negative or positive, see SplitNode
 
   if (triangles.size() < trianglesInLeafBound || depth>20)
     return addLeaf(triangles);
@@ -107,8 +107,8 @@ int KdTreeBuilder::build(std::vector<Triangle>& triangles, float* ranges, int de
       }
   }
     
-
-  splitNodes.emplace_back();
+  SplitNode sn;
+  splitNodes.push_back(sn);
   int const nodeIdx = static_cast<int>(splitNodes.size()) - 1;
 
   splitNodes[nodeIdx].plane = midValue;
